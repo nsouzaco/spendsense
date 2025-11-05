@@ -62,25 +62,26 @@ async function seed() {
     console.log('💸 Inserting transactions...');
     let transactionCount = 0;
     for (const tx of syntheticData.transactions) {
+      const txData = tx as any; // Type assertion for JSON data
       await sql`
         INSERT INTO transactions (
           id, account_id, user_id, amount, date, authorized_date,
           name, merchant_name, category, payment_channel, pending,
           transaction_type, iso_currency_code
         ) VALUES (
-          ${tx.id},
-          ${tx.accountId},
-          ${tx.userId},
-          ${tx.amount},
-          ${tx.date},
-          ${tx.authorizedDate || null},
-          ${tx.name},
-          ${tx.merchantName || null},
-          ${JSON.stringify(tx.category)},
-          ${tx.paymentChannel},
-          ${tx.pending},
-          ${tx.transactionType},
-          ${tx.isoCurrencyCode}
+          ${txData.id},
+          ${txData.accountId},
+          ${txData.userId},
+          ${txData.amount},
+          ${txData.date},
+          ${txData.authorizedDate || null},
+          ${txData.name},
+          ${txData.merchantName || null},
+          ${JSON.stringify(txData.category)},
+          ${txData.paymentChannel},
+          ${txData.pending},
+          ${txData.transactionType},
+          ${txData.isoCurrencyCode}
         )
       `;
       transactionCount++;

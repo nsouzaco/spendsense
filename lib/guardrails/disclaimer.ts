@@ -9,7 +9,7 @@ export function checkDisclaimerGuardrail(recommendation: Recommendation): Guardr
   
   return {
     name: 'Disclaimer Check',
-    passed: hasDisclaimer && isStandardDisclaimer,
+    passed: Boolean(hasDisclaimer && isStandardDisclaimer),
     reason: !hasDisclaimer 
       ? 'Missing required disclaimer'
       : !isStandardDisclaimer
