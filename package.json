@@ -10,6 +10,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "generate-data": "tsx scripts/generate-data.ts",
+    "process-users": "tsx scripts/process-users.ts",
     "seed-db": "tsx scripts/seed-database.ts",
     "generate-metrics": "tsx scripts/generate-metrics.ts"
   },
