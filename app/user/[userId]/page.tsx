@@ -110,7 +110,7 @@ export default function UserDashboard() {
       <header className="relative border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-extralight tracking-tight text-white">SpendSense</h1>
+            <h1 className="text-xl font-sans font-bold tracking-tight text-white">SpendSense</h1>
             <p className="text-sm font-light tracking-tight text-white/60">
               Welcome, {user.firstName} {user.lastName}
             </p>
