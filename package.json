@@ -12,7 +12,10 @@
     "generate-data": "tsx scripts/generate-data.ts",
     "process-users": "tsx scripts/process-users.ts",
     "seed-db": "tsx scripts/seed-database.ts",
-    "generate-metrics": "tsx scripts/generate-metrics.ts"
+    "generate-metrics": "tsx scripts/generate-metrics.ts",
+    "db:migrate": "tsx scripts/migrate-postgres.ts",
+    "db:seed": "tsx scripts/seed-postgres.ts",
+    "db:setup": "npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -29,6 +32,7 @@
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@vercel/postgres": "^0.10.0",
     "autoprefixer": "^10.4.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
