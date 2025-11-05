@@ -20,9 +20,6 @@ export default function UserDashboard() {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    // Trigger initialization in the background
-    fetch('/api/init').catch(console.error);
-    
     loadUserData();
   }, [userId]);
 
