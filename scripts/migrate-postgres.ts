@@ -83,10 +83,10 @@ async function migrate() {
     await sql`
       CREATE TABLE IF NOT EXISTS signals (
         user_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        window VARCHAR(10) NOT NULL,
+        "window" VARCHAR(10) NOT NULL,
         timestamp TIMESTAMP NOT NULL,
         data JSONB NOT NULL,
-        PRIMARY KEY (user_id, window)
+        PRIMARY KEY (user_id, "window")
       )
     `;
     console.log('✅ Created signals table');

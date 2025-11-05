@@ -93,7 +93,13 @@ async function seed() {
 
     // Insert liabilities
     console.log('📊 Inserting liabilities...');
-    for (const liability of syntheticData.liabilities) {
+    // Create a set of valid account IDs
+    const validAccountIds = new Set(syntheticData.accounts.map(acc => acc.id));
+    
+    // Only insert liabilities with valid account references
+    const validLiabilities = syntheticData.liabilities.filter(l => validAccountIds.has(l.accountId));
+    
+    for (const liability of validLiabilities) {
       await sql`
         INSERT INTO liabilities (
           id, user_id, account_id, type, details
@@ -106,7 +112,7 @@ async function seed() {
         )
       `;
     }
-    console.log(`✅ Inserted ${syntheticData.liabilities.length} liabilities`);
+    console.log(`✅ Inserted ${validLiabilities.length} liabilities (${syntheticData.liabilities.length - validLiabilities.length} skipped due to invalid account references)`);
 
     console.log('\n✅ Database seeded successfully!');
     console.log(`\n📊 Summary:`);
