@@ -5,7 +5,7 @@ import { createApiResponse, handleApiError } from '@/lib/api/middleware';
 export async function GET(request: NextRequest) {
   try {
     const storage = getStorage();
-    const users = storage.getAllUsers();
+    const users = await storage.getAllUsers();
     
     // Return simplified user list
     const userList = users.map(user => ({

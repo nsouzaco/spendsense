@@ -10,7 +10,7 @@ import type { TimeWindow } from '@/types';
 export async function POST(request: NextRequest) {
   try {
     const storage = getStorage();
-    const users = storage.getAllUsers();
+    const users = await storage.getAllUsers();
     
     let processedCount = 0;
     let errors = 0;
@@ -19,26 +19,29 @@ export async function POST(request: NextRequest) {
       try {
         if (!user.consentStatus.active) continue;
         
-        const accounts = storage.getUserAccounts(user.id);
-        const transactions = storage.getUserTransactions(user.id);
-        const liabilities = storage.getUserLiabilities(user.id);
+        const accounts = await storage.getUserAccounts(user.id);
+        const transactions = await storage.getUserTransactions(user.id);
+        const liabilities = await storage.getUserLiabilities(user.id);
         
         // Detect signals for both windows
         const windows: TimeWindow[] = ['30d', '180d'];
         for (const window of windows) {
           const signals = detectSignals(user, accounts, transactions, liabilities, window);
-          storage.saveSignals(signals);
+          await storage.saveSignals(signals);
         }
         
         // Get 180d signals for persona assignment
-        const signals180d = storage.getUserSignals(user.id).find(s => s.window === '180d');
+        const allSignals = await storage.getUserSignals(user.id);
+        const signals180d = allSignals.find(s => s.window === '180d');
         if (!signals180d) continue;
         
         // Assign personas
         const personas = assignPersonas(user.id, signals180d);
         if (personas.length === 0) continue;
         
-        personas.forEach(persona => storage.savePersona(persona));
+        for (const persona of personas) {
+          await storage.savePersona(persona);
+        }
         
         // Generate recommendations
         const recommendations = await generateRecommendations(user, signals180d, personas, 5);
@@ -47,7 +50,7 @@ export async function POST(request: NextRequest) {
         for (const rec of recommendations) {
           const guardrailResult = applyGuardrails(rec, user, signals180d);
           if (guardrailResult.passed && guardrailResult.recommendation) {
-            storage.saveRecommendation(guardrailResult.recommendation);
+            await storage.saveRecommendation(guardrailResult.recommendation);
           }
         }
         

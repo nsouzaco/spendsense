@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const storage = getStorage();
-    const user = storage.getUser(params.userId);
+    const user = await storage.getUser(params.userId);
     
     if (!user) {
       return NextResponse.json(

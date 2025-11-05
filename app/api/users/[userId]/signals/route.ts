@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const storage = getStorage();
-    const signals = storage.getUserSignals(params.userId);
+    const signals = await storage.getUserSignals(params.userId);
     
     if (!signals || signals.length === 0) {
       return NextResponse.json(

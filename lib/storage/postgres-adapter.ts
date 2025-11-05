@@ -15,9 +15,7 @@ import type {
 } from '@/types';
 import type { StorageAdapter } from './interface';
 
-// Note: This adapter is async and requires refactoring the StorageAdapter interface
-// For now, it's included for future use but not actively used in production
-export class PostgresStorageAdapter {
+export class PostgresStorageAdapter implements StorageAdapter {
   // User operations
   async getUser(userId: string): Promise<User | null> {
     const result = await sql`SELECT * FROM users WHERE id = ${userId}`;
@@ -45,8 +43,9 @@ export class PostgresStorageAdapter {
     return result.rows.map(row => this.parseUser(row));
   }
 
-  getUserCount(): Promise<number> {
-    return sql`SELECT COUNT(*) as count FROM users`.then(r => parseInt(r.rows[0].count));
+  async getUserCount(): Promise<number> {
+    const result = await sql`SELECT COUNT(*) as count FROM users`;
+    return parseInt(result.rows[0].count);
   }
 
   // Account operations

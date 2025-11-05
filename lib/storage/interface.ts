@@ -15,49 +15,49 @@ import type {
 
 export interface StorageAdapter {
   // User operations
-  getUser(userId: string): User | null;
-  getAllUsers(filters?: FilterParams, search?: SearchParams): User[];
-  getUserCount(): number;
+  getUser(userId: string): Promise<User | null>;
+  getAllUsers(filters?: FilterParams, search?: SearchParams): Promise<User[]>;
+  getUserCount(): Promise<number>;
 
   // Account operations
-  getUserAccounts(userId: string): Account[];
-  getAccount(accountId: string): Account | null;
+  getUserAccounts(userId: string): Promise<Account[]>;
+  getAccount(accountId: string): Promise<Account | null>;
 
   // Transaction operations
-  getUserTransactions(userId: string, limit?: number): Transaction[];
-  getAccountTransactions(accountId: string, limit?: number): Transaction[];
+  getUserTransactions(userId: string, limit?: number): Promise<Transaction[]>;
+  getAccountTransactions(accountId: string, limit?: number): Promise<Transaction[]>;
 
   // Liability operations
-  getUserLiabilities(userId: string): Liability[];
+  getUserLiabilities(userId: string): Promise<Liability[]>;
 
   // Signal operations
-  getUserSignals(userId: string): SignalResult[];
-  saveSignals(signals: SignalResult): void;
+  getUserSignals(userId: string): Promise<SignalResult[]>;
+  saveSignals(signals: SignalResult): Promise<void>;
 
   // Persona operations
-  getUserPersonas(userId: string): PersonaAssignment[];
-  savePersona(persona: PersonaAssignment): void;
+  getUserPersonas(userId: string): Promise<PersonaAssignment[]>;
+  savePersona(persona: PersonaAssignment): Promise<void>;
 
   // Recommendation operations
-  getUserRecommendations(userId: string): Recommendation[];
-  getRecommendation(recommendationId: string): Recommendation | null;
-  getAllRecommendations(filters?: FilterParams): Recommendation[];
-  saveRecommendation(recommendation: Recommendation): void;
-  updateRecommendation(recommendationId: string, updates: Partial<Recommendation>): void;
+  getUserRecommendations(userId: string): Promise<Recommendation[]>;
+  getRecommendation(recommendationId: string): Promise<Recommendation | null>;
+  getAllRecommendations(filters?: FilterParams): Promise<Recommendation[]>;
+  saveRecommendation(recommendation: Recommendation): Promise<void>;
+  updateRecommendation(recommendationId: string, updates: Partial<Recommendation>): Promise<void>;
 
   // Consent operations
-  getConsent(userId: string): Consent | null;
-  saveConsent(consent: Consent): void;
-  revokeConsent(userId: string): void;
+  getConsent(userId: string): Promise<Consent | null>;
+  saveConsent(consent: Consent): Promise<void>;
+  revokeConsent(userId: string): Promise<void>;
 
   // Operator operations
-  saveOperatorAction(action: OperatorAction): void;
-  getOperatorActions(limit?: number): OperatorAction[];
+  saveOperatorAction(action: OperatorAction): Promise<void>;
+  getOperatorActions(limit?: number): Promise<OperatorAction[]>;
 
   // Metrics
-  getSystemMetrics(): SystemMetrics;
+  getSystemMetrics(): Promise<SystemMetrics>;
 
   // Bulk operations
-  bulkUpdateRecommendations(recommendationIds: string[], updates: Partial<Recommendation>): void;
+  bulkUpdateRecommendations(recommendationIds: string[], updates: Partial<Recommendation>): Promise<void>;
 }
 

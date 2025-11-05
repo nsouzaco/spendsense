@@ -28,13 +28,13 @@ export async function GET(request: NextRequest) {
     }
     
     const storage = getStorage();
-    const users = storage.getAllUsers(filters, search);
+    const users = await storage.getAllUsers(filters, search);
     
     // Enrich with persona and signal count
-    const enrichedUsers = users.map(user => {
-      const personas = storage.getUserPersonas(user.id);
-      const signals = storage.getUserSignals(user.id);
-      const recommendations = storage.getUserRecommendations(user.id);
+    const enrichedUsers = await Promise.all(users.map(async user => {
+      const personas = await storage.getUserPersonas(user.id);
+      const signals = await storage.getUserSignals(user.id);
+      const recommendations = await storage.getUserRecommendations(user.id);
       
       return {
         ...user,
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
         signalCount: signals.length,
         recommendationCount: recommendations.length,
       };
-    });
+    }));
     
     return NextResponse.json(createApiResponse(enrichedUsers));
   } catch (error) {

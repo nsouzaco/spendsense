@@ -5,7 +5,7 @@ import { createApiResponse, handleApiError } from '@/lib/api/middleware';
 export async function GET(request: NextRequest) {
   try {
     const storage = getStorage();
-    const metrics = storage.getSystemMetrics();
+    const metrics = await storage.getSystemMetrics();
     
     return NextResponse.json(createApiResponse(metrics));
   } catch (error) {

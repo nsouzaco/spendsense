@@ -10,7 +10,7 @@ async function processAllUsers() {
   console.log('🚀 Starting user processing...\n');
   
   const storage = getStorage();
-  const users = storage.getAllUsers();
+  const users = await storage.getAllUsers();
   
   console.log(`📊 Found ${users.length} users\n`);
   
@@ -30,9 +30,9 @@ async function processAllUsers() {
       console.log(`\n📝 Processing: ${user.firstName} ${user.lastName} (${user.id})`);
       
       // Get user data
-      const accounts = storage.getUserAccounts(user.id);
-      const transactions = storage.getUserTransactions(user.id);
-      const liabilities = storage.getUserLiabilities(user.id);
+      const accounts = await storage.getUserAccounts(user.id);
+      const transactions = await storage.getUserTransactions(user.id);
+      const liabilities = await storage.getUserLiabilities(user.id);
       
       console.log(`   Accounts: ${accounts.length}, Transactions: ${transactions.length}, Liabilities: ${liabilities.length}`);
       
@@ -41,12 +41,13 @@ async function processAllUsers() {
       
       for (const window of windows) {
         const signals = detectSignals(user, accounts, transactions, liabilities, window);
-        storage.saveSignals(signals);
+        await storage.saveSignals(signals);
         console.log(`   ✅ Signals detected (${window})`);
       }
       
       // Use 180d window for persona assignment (more data)
-      const signals180d = storage.getUserSignals(user.id).find(s => s.window === '180d');
+      const allSignals = await storage.getUserSignals(user.id);
+      const signals180d = allSignals.find(s => s.window === '180d');
       
       if (!signals180d) {
         console.log(`   ⚠️  No 180d signals found, skipping`);
@@ -63,7 +64,9 @@ async function processAllUsers() {
         continue;
       }
       
-      personas.forEach(persona => storage.savePersona(persona));
+      for (const persona of personas) {
+        await storage.savePersona(persona);
+      }
       console.log(`   ✅ Assigned ${personas.length} persona(s): ${personas.map(p => p.personaType).join(', ')}`);
       
       // Generate recommendations
@@ -82,7 +85,7 @@ async function processAllUsers() {
         const guardrailResult = applyGuardrails(rec, user, signals180d);
         
         if (guardrailResult.passed && guardrailResult.recommendation) {
-          storage.saveRecommendation(guardrailResult.recommendation);
+          await storage.saveRecommendation(guardrailResult.recommendation);
           approvedCount++;
         } else {
           console.log(`   ⚠️  Recommendation failed guardrails: ${rec.title}`);

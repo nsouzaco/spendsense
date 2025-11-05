@@ -95,11 +95,11 @@ export class MemoryStorageAdapter implements StorageAdapter {
   }
 
   // User operations
-  getUser(userId: string): User | null {
+  async getUser(userId: string): Promise<User | null> {
     return this.users.get(userId) || null;
   }
 
-  getAllUsers(filters?: FilterParams, search?: SearchParams): User[] {
+  async getAllUsers(filters?: FilterParams, search?: SearchParams): Promise<User[]> {
     let users = Array.from(this.users.values());
 
     // Apply filters
@@ -138,22 +138,22 @@ export class MemoryStorageAdapter implements StorageAdapter {
     return users;
   }
 
-  getUserCount(): number {
+  async getUserCount(): Promise<number> {
     return this.users.size;
   }
 
   // Account operations
-  getUserAccounts(userId: string): Account[] {
+  async getUserAccounts(userId: string): Promise<Account[]> {
     const accountIds = this.accountsByUser.get(userId) || [];
     return accountIds.map(id => this.accounts.get(id)!).filter(Boolean);
   }
 
-  getAccount(accountId: string): Account | null {
+  async getAccount(accountId: string): Promise<Account | null> {
     return this.accounts.get(accountId) || null;
   }
 
   // Transaction operations
-  getUserTransactions(userId: string, limit?: number): Transaction[] {
+  async getUserTransactions(userId: string, limit?: number): Promise<Transaction[]> {
     const transactionIds = this.transactionsByUser.get(userId) || [];
     let transactions = transactionIds.map(id => this.transactions.get(id)!).filter(Boolean);
     
@@ -167,7 +167,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
     return transactions;
   }
 
-  getAccountTransactions(accountId: string, limit?: number): Transaction[] {
+  async getAccountTransactions(accountId: string, limit?: number): Promise<Transaction[]> {
     const transactionIds = this.transactionsByAccount.get(accountId) || [];
     let transactions = transactionIds.map(id => this.transactions.get(id)!).filter(Boolean);
     
@@ -181,17 +181,17 @@ export class MemoryStorageAdapter implements StorageAdapter {
   }
 
   // Liability operations
-  getUserLiabilities(userId: string): Liability[] {
+  async getUserLiabilities(userId: string): Promise<Liability[]> {
     const liabilityIds = this.liabilitiesByUser.get(userId) || [];
     return liabilityIds.map(id => this.liabilities.get(id)!).filter(Boolean);
   }
 
   // Signal operations
-  getUserSignals(userId: string): SignalResult[] {
+  async getUserSignals(userId: string): Promise<SignalResult[]> {
     return this.signals.get(userId) || [];
   }
 
-  saveSignals(signals: SignalResult): void {
+  async saveSignals(signals: SignalResult): Promise<void> {
     const existing = this.signals.get(signals.userId) || [];
     const updated = existing.filter(s => s.window !== signals.window);
     updated.push(signals);
@@ -199,27 +199,27 @@ export class MemoryStorageAdapter implements StorageAdapter {
   }
 
   // Persona operations
-  getUserPersonas(userId: string): PersonaAssignment[] {
+  async getUserPersonas(userId: string): Promise<PersonaAssignment[]> {
     return this.personas.get(userId) || [];
   }
 
-  savePersona(persona: PersonaAssignment): void {
+  async savePersona(persona: PersonaAssignment): Promise<void> {
     const existing = this.personas.get(persona.userId) || [];
     existing.push(persona);
     this.personas.set(persona.userId, existing);
   }
 
   // Recommendation operations
-  getUserRecommendations(userId: string): Recommendation[] {
+  async getUserRecommendations(userId: string): Promise<Recommendation[]> {
     const recommendationIds = this.recommendationsByUser.get(userId) || [];
     return recommendationIds.map(id => this.recommendations.get(id)!).filter(Boolean);
   }
 
-  getRecommendation(recommendationId: string): Recommendation | null {
+  async getRecommendation(recommendationId: string): Promise<Recommendation | null> {
     return this.recommendations.get(recommendationId) || null;
   }
 
-  getAllRecommendations(filters?: FilterParams): Recommendation[] {
+  async getAllRecommendations(filters?: FilterParams): Promise<Recommendation[]> {
     let recs = Array.from(this.recommendations.values());
 
     if (filters?.persona && filters.persona.length > 0) {
@@ -229,7 +229,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
     return recs;
   }
 
-  saveRecommendation(recommendation: Recommendation): void {
+  async saveRecommendation(recommendation: Recommendation): Promise<void> {
     this.recommendations.set(recommendation.id, recommendation);
     
     if (!this.recommendationsByUser.has(recommendation.userId)) {
@@ -238,7 +238,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
     this.recommendationsByUser.get(recommendation.userId)!.push(recommendation.id);
   }
 
-  updateRecommendation(recommendationId: string, updates: Partial<Recommendation>): void {
+  async updateRecommendation(recommendationId: string, updates: Partial<Recommendation>): Promise<void> {
     const existing = this.recommendations.get(recommendationId);
     if (existing) {
       this.recommendations.set(recommendationId, { ...existing, ...updates });
@@ -246,15 +246,15 @@ export class MemoryStorageAdapter implements StorageAdapter {
   }
 
   // Consent operations
-  getConsent(userId: string): Consent | null {
+  async getConsent(userId: string): Promise<Consent | null> {
     return this.consents.get(userId) || null;
   }
 
-  saveConsent(consent: Consent): void {
+  async saveConsent(consent: Consent): Promise<void> {
     this.consents.set(consent.userId, consent);
   }
 
-  revokeConsent(userId: string): void {
+  async revokeConsent(userId: string): Promise<void> {
     const existing = this.consents.get(userId);
     if (existing) {
       this.consents.set(userId, {
@@ -266,11 +266,11 @@ export class MemoryStorageAdapter implements StorageAdapter {
   }
 
   // Operator operations
-  saveOperatorAction(action: OperatorAction): void {
+  async saveOperatorAction(action: OperatorAction): Promise<void> {
     this.operatorActions.push(action);
   }
 
-  getOperatorActions(limit?: number): OperatorAction[] {
+  async getOperatorActions(limit?: number): Promise<OperatorAction[]> {
     const actions = [...this.operatorActions].sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
@@ -278,7 +278,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
   }
 
   // Metrics
-  getSystemMetrics(): SystemMetrics {
+  async getSystemMetrics(): Promise<SystemMetrics> {
     const totalUsers = this.users.size;
     const usersWithConsent = Array.from(this.consents.values()).filter(c => c.active).length;
     const usersWithPersona = Array.from(this.personas.keys()).length;
@@ -308,10 +308,10 @@ export class MemoryStorageAdapter implements StorageAdapter {
   }
 
   // Bulk operations
-  bulkUpdateRecommendations(recommendationIds: string[], updates: Partial<Recommendation>): void {
-    recommendationIds.forEach(id => {
-      this.updateRecommendation(id, updates);
-    });
+  async bulkUpdateRecommendations(recommendationIds: string[], updates: Partial<Recommendation>): Promise<void> {
+    for (const id of recommendationIds) {
+      await this.updateRecommendation(id, updates);
+    }
   }
 }
 

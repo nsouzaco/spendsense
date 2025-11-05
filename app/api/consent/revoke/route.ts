@@ -18,9 +18,9 @@ export async function POST(request: NextRequest) {
     }
     
     const storage = getStorage();
-    storage.revokeConsent(userId);
+    await storage.revokeConsent(userId);
     
-    const updatedConsent = storage.getConsent(userId);
+    const updatedConsent = await storage.getConsent(userId);
     
     return NextResponse.json(createApiResponse(updatedConsent));
   } catch (error) {

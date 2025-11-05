@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const storage = getStorage();
-    const recommendations = storage.getUserRecommendations(params.userId);
+    const recommendations = await storage.getUserRecommendations(params.userId);
     
     return NextResponse.json(createApiResponse(recommendations));
   } catch (error) {

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
     
     const storage = getStorage();
-    const consent = storage.getConsent(userId);
+    const consent = await storage.getConsent(userId);
     
     if (!consent) {
       return NextResponse.json(
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
     
     const storage = getStorage();
-    const user = storage.getUser(userId);
+    const user = await storage.getUser(userId);
     
     if (!user) {
       return NextResponse.json(
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       grantedAt: new Date().toISOString(),
     };
     
-    storage.saveConsent(consent);
+    await storage.saveConsent(consent);
     
     return NextResponse.json(createApiResponse(consent));
   } catch (error) {

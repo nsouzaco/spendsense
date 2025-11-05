@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // For user role, verify the user exists
     if (role === 'user') {
       const storage = getStorage();
-      const user = storage.getUser(userId);
+      const user = await storage.getUser(userId);
       
       if (!user) {
         return NextResponse.json(
