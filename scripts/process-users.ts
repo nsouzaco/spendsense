@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { getStorage } from '../lib/storage';
 import { detectSignals } from '../lib/signals';
 import { assignPersonas } from '../lib/personas';
