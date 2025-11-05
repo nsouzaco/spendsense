@@ -74,7 +74,7 @@ export default function OperatorDashboard() {
             <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 backdrop-blur-sm">
               <span className="text-[9px] font-light uppercase tracking-[0.08em] text-white/70">OPERATOR</span>
             </div>
-            <h1 className="text-xl font-sans font-bold tracking-tight text-white">SpendSense</h1>
+            <h1 className="text-xl font-sans font-semibold tracking-tight text-white">SpendSense</h1>
             <p className="text-sm font-light tracking-tight text-white/60">System Administration</p>
           </div>
           <button

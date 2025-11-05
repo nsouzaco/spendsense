@@ -55,12 +55,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           {/* Header */}
           <div className="text-center">
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
-              <span className="text-[10px] font-light uppercase tracking-[0.08em] text-white/70">BETA</span>
-              <span className="h-1 w-1 rounded-full bg-white/40" />
-              <span className="text-xs font-light tracking-tight text-white/80">AI-Powered Insights</span>
-            </div>
-            <h1 className="mt-6 text-4xl font-extralight tracking-tight text-white">
+            <h1 className="text-4xl font-extralight tracking-tight text-white">
               Welcome back
             </h1>
             <p className="mt-3 text-base font-light tracking-tight text-white/60">
