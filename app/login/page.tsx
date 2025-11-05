@@ -122,8 +122,6 @@ export default function LoginPage() {
         });
 
         if (response.ok) {
-          // Delay redirect to allow browser password manager to process
-          await new Promise(resolve => setTimeout(resolve, 750));
           router.push('/operator');
         }
       }
@@ -157,8 +155,6 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        // Delay redirect to allow browser password manager to process
-        await new Promise(resolve => setTimeout(resolve, 750));
         router.push(`/user/${pendingUserId}`);
       }
     } catch (error) {
@@ -240,6 +236,7 @@ export default function LoginPage() {
                     placeholder="user1"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    autoComplete="off"
                     className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-light tracking-tight text-white placeholder:text-white/40 backdrop-blur-sm focus:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/10"
                   />
                 </div>
@@ -254,6 +251,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleLogin('user')}
+                    autoComplete="new-password"
                     className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-light tracking-tight text-white placeholder:text-white/40 backdrop-blur-sm focus:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/10"
                   />
                 </div>
@@ -289,6 +287,7 @@ export default function LoginPage() {
                     placeholder="admin"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    autoComplete="off"
                     className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-light tracking-tight text-white placeholder:text-white/40 backdrop-blur-sm focus:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/10"
                   />
                 </div>
@@ -303,6 +302,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleLogin('operator')}
+                    autoComplete="new-password"
                     className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-light tracking-tight text-white placeholder:text-white/40 backdrop-blur-sm focus:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/10"
                   />
                 </div>
