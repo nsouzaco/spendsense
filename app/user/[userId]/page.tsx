@@ -20,6 +20,9 @@ export default function UserDashboard() {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
+    // Trigger initialization in the background
+    fetch('/api/init').catch(console.error);
+    
     loadUserData();
   }, [userId]);
 
@@ -215,10 +218,21 @@ export default function UserDashboard() {
             {recommendations.length === 0 ? (
               <div className="text-center py-8 space-y-4">
                 <p className="text-muted-foreground">
-                  No recommendations available yet. Click below to analyze your financial data.
+                  {processing 
+                    ? 'Analyzing your financial data with AI... This may take a few minutes.' 
+                    : 'No recommendations available yet. Click below to analyze your financial data.'
+                  }
                 </p>
+                {processing && (
+                  <div className="mx-auto w-64">
+                    <Progress value={undefined} className="animate-pulse" />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Generating personalized recommendations...
+                    </p>
+                  </div>
+                )}
                 <Button onClick={handleProcessData} disabled={processing}>
-                  {processing ? 'Processing...' : 'Analyze My Finances'}
+                  {processing ? 'Processing... Please wait' : 'Analyze My Finances'}
                 </Button>
               </div>
             ) : (
