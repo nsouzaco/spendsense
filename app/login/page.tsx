@@ -122,6 +122,8 @@ export default function LoginPage() {
         });
 
         if (response.ok) {
+          // Delay redirect to allow browser password manager to process
+          await new Promise(resolve => setTimeout(resolve, 750));
           router.push('/operator');
         }
       }
@@ -155,6 +157,8 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
+        // Delay redirect to allow browser password manager to process
+        await new Promise(resolve => setTimeout(resolve, 750));
         router.push(`/user/${pendingUserId}`);
       }
     } catch (error) {
