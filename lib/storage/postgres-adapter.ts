@@ -202,14 +202,21 @@ export class PostgresStorageAdapter implements StorageAdapter {
 
   // Metrics
   async getSystemMetrics(): Promise<SystemMetrics> {
+    console.log('🔍 [PostgreSQL] Getting system metrics...');
+    
     const totalUsers = await this.getUserCount();
+    console.log('📊 Total users:', totalUsers);
+    
     const consentsResult = await sql`SELECT COUNT(*) as count FROM consents WHERE active = true`;
     const usersWithConsent = parseInt(consentsResult.rows[0].count);
+    console.log('✅ Users with consent:', usersWithConsent);
     
     const personasResult = await sql`SELECT COUNT(DISTINCT user_id) as count FROM personas`;
     const usersWithPersona = parseInt(personasResult.rows[0].count);
+    console.log('👤 Users with persona:', usersWithPersona);
     
     // Get persona breakdown
+    console.log('🔍 Querying persona breakdown...');
     const personaCounts = await sql`
       SELECT 
         data->>'personaType' as persona_type,
@@ -217,6 +224,8 @@ export class PostgresStorageAdapter implements StorageAdapter {
       FROM personas
       GROUP BY data->>'personaType'
     `;
+    
+    console.log('📊 Persona counts raw result:', personaCounts.rows);
     
     const personaBreakdown: Record<string, number> = {
       HIGH_UTILIZATION: 0,
@@ -227,10 +236,13 @@ export class PostgresStorageAdapter implements StorageAdapter {
     };
     
     personaCounts.rows.forEach(row => {
+      console.log(`  - ${row.persona_type}: ${row.count}`);
       if (row.persona_type in personaBreakdown) {
         personaBreakdown[row.persona_type] = parseInt(row.count);
       }
     });
+    
+    console.log('📊 Final persona breakdown:', personaBreakdown);
     
     const recsResult = await sql`SELECT COUNT(*) as count FROM recommendations`;
     const totalRecommendations = parseInt(recsResult.rows[0].count);
