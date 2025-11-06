@@ -292,9 +292,13 @@ export class MemoryStorageAdapter implements StorageAdapter {
       LOW_INCOME_STABILIZER: 0,
     };
     
-    Array.from(this.personas.values()).forEach(persona => {
-      if (persona.type in personaBreakdown) {
-        personaBreakdown[persona.type]++;
+    Array.from(this.personas.values()).forEach(personaArray => {
+      // Each user can have multiple personas, count the primary one
+      if (personaArray.length > 0) {
+        const primaryPersona = personaArray.find(p => p.isPrimary) || personaArray[0];
+        if (primaryPersona.type in personaBreakdown) {
+          personaBreakdown[primaryPersona.type]++;
+        }
       }
     });
     
