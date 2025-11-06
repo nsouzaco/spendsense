@@ -109,8 +109,8 @@ export default function OperatorDashboard() {
 
   return (
     <div className="relative min-h-screen w-screen overflow-x-hidden bg-gray-50">
-      {/* Header - Keep Dark */}
-      <header className="relative border-b border-white/10 bg-gradient-to-br from-purple-900/30 via-black to-black backdrop-blur-xl">
+      {/* Header */}
+      <header className="relative border-b border-white/10 bg-gradient-to-b from-gray-900 via-gray-900 to-black">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-sans font-semibold tracking-tight text-white">SpendSense</h1>
