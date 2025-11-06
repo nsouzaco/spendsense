@@ -10,6 +10,7 @@ export default function OperatorDashboard() {
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -37,6 +38,22 @@ export default function OperatorDashboard() {
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/');
+  };
+
+  const handleAnalyzeAll = async () => {
+    setAnalyzing(true);
+    try {
+      const res = await fetch('/api/operator/analyze-all', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        // Reload data to show updated metrics
+        await loadData();
+      }
+    } catch (error) {
+      console.error('Error analyzing users:', error);
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   const filteredUsers = users.filter(user => 
@@ -70,11 +87,11 @@ export default function OperatorDashboard() {
       {/* Header */}
       <header className="relative border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <div className="mb-1 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-sans font-semibold tracking-tight text-white">SpendSense</h1>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 backdrop-blur-sm">
               <span className="text-[9px] font-light uppercase tracking-[0.08em] text-white/70">OPERATOR</span>
             </div>
-            <h1 className="text-xl font-sans font-semibold tracking-tight text-white">SpendSense</h1>
           </div>
           <button
             onClick={handleLogout}
@@ -89,9 +106,20 @@ export default function OperatorDashboard() {
         {/* Metrics Overview */}
         {metrics && (
           <>
-            <div>
-              <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">Platform Overview</h2>
-              <p className="text-sm font-light tracking-tight text-white/60">Monitor user engagement and system performance metrics</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">Platform Overview</h2>
+                <p className="text-sm font-light tracking-tight text-white/60">Monitor user engagement and system performance metrics</p>
+              </div>
+              {metrics && metrics.totalUsers > metrics.usersWithPersona && (
+                <button
+                  onClick={handleAnalyzeAll}
+                  disabled={analyzing}
+                  className="rounded-xl border border-purple-500/30 bg-purple-500/20 px-4 py-2 text-sm font-light tracking-tight text-purple-200 backdrop-blur-sm transition-colors hover:bg-purple-500/30 disabled:opacity-50"
+                >
+                  {analyzing ? 'Analyzing...' : `🔍 Analyze ${metrics.totalUsers - metrics.usersWithPersona} Users`}
+                </button>
+              )}
             </div>
             
             <div className="grid md:grid-cols-3 gap-4">
