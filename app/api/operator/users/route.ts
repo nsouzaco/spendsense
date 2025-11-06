@@ -3,6 +3,8 @@ import { getStorage } from '@/lib/storage';
 import { createApiResponse, handleApiError } from '@/lib/api/middleware';
 import type { FilterParams, SearchParams } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
