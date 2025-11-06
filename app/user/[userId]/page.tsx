@@ -144,7 +144,7 @@ export default function UserDashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto ml-64">
         {/* Header */}
         <header className="border-b border-gray-200 bg-white">
           <div className="px-8 py-6">

@@ -55,24 +55,14 @@ export function Sidebar({ userId, userName }: SidebarProps) {
   ];
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r border-white/10 bg-gradient-to-b from-gray-900 via-gray-900 to-black">
+    <div className="fixed left-0 top-0 flex h-screen w-64 flex-col border-r border-white/10 bg-gradient-to-b from-gray-900 via-gray-900 to-black z-30">
       {/* Logo/Brand */}
       <div className="flex h-16 items-center border-b border-white/10 px-6">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-purple-400 shadow-lg shadow-purple-500/50">
-          </div>
+        <div className="flex items-center">
           <span className="text-xl font-semibold tracking-tight text-white">SpendSense</span>
         </div>
       </div>
 
-      {/* User Info */}
-      <div className="border-b border-white/10 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-purple-400 text-white font-medium shadow-lg shadow-purple-500/30">
-            {userName.charAt(0).toUpperCase()}
-          </div>
-        </div>
-      </div>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-4">
