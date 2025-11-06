@@ -72,23 +72,23 @@ export function CategoryBarChart({ transactions }: CategoryBarChartProps) {
   }
 
   return (
-    <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
+    <Card className="border-gray-200 bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-white font-extralight">Spending by Category</CardTitle>
-        <CardDescription className="text-white/60">
+        <CardTitle className="text-gray-900 font-semibold">Spending by Category</CardTitle>
+        <CardDescription className="text-gray-600">
           Total: ${totalSpending.toLocaleString()}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <BarChart data={chartData} layout="vertical">
-            <CartesianGrid horizontal={false} strokeDasharray="3 3" className="stroke-white/10" />
+            <CartesianGrid horizontal={false} strokeDasharray="3 3" className="stroke-gray-200" />
             <XAxis
               type="number"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              className="text-white/60"
+              className="text-gray-600"
               tickFormatter={(value) => `$${value}`}
             />
             <YAxis
@@ -97,12 +97,12 @@ export function CategoryBarChart({ transactions }: CategoryBarChartProps) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              className="text-white/60"
+              className="text-gray-600"
               tickFormatter={(value) => `${categoryIcons[value] || ''} ${value}`}
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent className="border-white/20 bg-black/90 backdrop-blur-xl" hideLabel />}
+              content={<ChartTooltipContent hideLabel />}
             />
             <Bar dataKey="amount" fill="var(--color-amount)" radius={[0, 4, 4, 0]} />
           </BarChart>

@@ -86,10 +86,10 @@ export function TransactionTable({ transactions, limit }: TransactionTableProps)
   };
 
   return (
-    <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
+    <Card className="border-gray-200 bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-white font-extralight">Recent Transactions</CardTitle>
-        <CardDescription className="text-white/60">
+        <CardTitle className="text-gray-900 font-semibold">Recent Transactions</CardTitle>
+        <CardDescription className="text-gray-600">
           {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}
         </CardDescription>
       </CardHeader>
@@ -100,19 +100,15 @@ export function TransactionTable({ transactions, limit }: TransactionTableProps)
             placeholder="Search transactions..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border-white/20 bg-white/10 text-white placeholder:text-white/40"
+            className="border-gray-300 bg-white"
           />
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[200px] border-white/20 bg-white/10 text-white">
+            <SelectTrigger className="w-[200px] border-gray-300 bg-white">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
-            <SelectContent className="border-white/20 bg-black/90 backdrop-blur-xl">
+            <SelectContent>
               {categories.map(cat => (
-                <SelectItem
-                  key={cat}
-                  value={cat}
-                  className="text-white hover:bg-white/10"
-                >
+                <SelectItem key={cat} value={cat}>
                   {cat === 'all' ? 'All Categories' : cat}
                 </SelectItem>
               ))}
@@ -121,41 +117,41 @@ export function TransactionTable({ transactions, limit }: TransactionTableProps)
         </div>
 
         {/* Table */}
-        <div className="rounded-md border border-white/10">
+        <div className="rounded-md border border-gray-200">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10 hover:bg-white/5">
-                <TableHead className="text-white/70">Date</TableHead>
-                <TableHead className="text-white/70">Description</TableHead>
-                <TableHead className="text-white/70">Category</TableHead>
-                <TableHead className="text-right text-white/70">Amount</TableHead>
+              <TableRow className="border-gray-200 hover:bg-gray-50">
+                <TableHead className="text-gray-700">Date</TableHead>
+                <TableHead className="text-gray-700">Description</TableHead>
+                <TableHead className="text-gray-700">Category</TableHead>
+                <TableHead className="text-right text-gray-700">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTransactions.map((tx) => (
-                <TableRow key={tx.id} className="border-white/10 hover:bg-white/5">
-                  <TableCell className="font-light text-white/60">
+                <TableRow key={tx.id} className="border-gray-200 hover:bg-gray-50">
+                  <TableCell className="font-light text-gray-600">
                     {formatDate(tx.date)}
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <p className="font-light text-white">{tx.name}</p>
+                      <p className="font-medium text-gray-900">{tx.name}</p>
                       {tx.merchantName && (
-                        <p className="text-xs font-light text-white/50">{tx.merchantName}</p>
+                        <p className="text-xs text-gray-500">{tx.merchantName}</p>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="border-white/20 bg-white/10 text-white/70">
+                    <Badge variant="outline" className="border-gray-300 bg-gray-50 text-gray-700">
                       {tx.category.primary}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <span
-                      className={`font-light ${
+                      className={`font-medium ${
                         tx.transactionType === 'credit'
-                          ? 'text-green-400'
-                          : 'text-white'
+                          ? 'text-green-600'
+                          : 'text-gray-900'
                       }`}
                     >
                       {formatAmount(tx.amount, tx.transactionType)}

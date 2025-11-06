@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import type { User, SignalResult, Recommendation, Account, Transaction } from '@/types';
 
 // Import new components
+import { Sidebar } from '@/components/user/Sidebar';
 import { AccountCard } from '@/components/user/AccountCard';
 import { StatCards } from '@/components/user/StatCards';
 import { IncomeExpenseChart } from '@/components/user/IncomeExpenseChart';
@@ -108,12 +109,11 @@ export default function UserDashboard() {
 
   if (loading) {
     return (
-      <div className="relative min-h-screen w-screen overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-black to-black" />
-        <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center flex-1">
           <div className="text-center space-y-4">
-            <div className="w-12 h-12 border-2 border-white/10 border-t-white/80 rounded-full animate-spin mx-auto" />
-            <p className="text-sm font-light tracking-tight text-white/60">Loading your financial insights...</p>
+            <div className="w-12 h-12 border-2 border-gray-200 border-t-purple-600 rounded-full animate-spin mx-auto" />
+            <p className="text-sm font-light tracking-tight text-gray-600">Loading your financial insights...</p>
           </div>
         </div>
       </div>
@@ -122,15 +122,12 @@ export default function UserDashboard() {
 
   if (!user) {
     return (
-      <div className="relative min-h-screen w-screen overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-black to-black" />
-        <div className="flex items-center justify-center min-h-screen px-4">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl max-w-md w-full text-center space-y-6">
-            <h2 className="text-2xl font-extralight tracking-tight text-white">User Not Found</h2>
-            <Button onClick={() => router.push('/')} variant="outline" className="border-white/20 bg-white/10 text-white">
-              Back to Home
-            </Button>
-          </div>
+      <div className="flex min-h-screen bg-gray-50 items-center justify-center px-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm max-w-md w-full text-center space-y-6">
+          <h2 className="text-2xl font-light tracking-tight text-gray-900">User Not Found</h2>
+          <Button onClick={() => router.push('/')}>
+            Back to Home
+          </Button>
         </div>
       </div>
     );
@@ -139,69 +136,62 @@ export default function UserDashboard() {
   const signal180d = signals.find(s => s.window === '180d');
 
   return (
-    <div className="relative min-h-screen w-screen overflow-hidden bg-black">
-      {/* Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-black to-black" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-600/20 via-transparent to-transparent" />
-      
-      {/* Header */}
-      <header className="relative border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-sans font-semibold tracking-tight text-white">SpendSense</h1>
-            <p className="text-sm font-light tracking-tight text-white/60">
-              Welcome, {user.firstName} {user.lastName}
-            </p>
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar 
+        userId={userId} 
+        userName={`${user.firstName} ${user.lastName}`} 
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        {/* Header */}
+        <header className="border-b border-gray-200 bg-white">
+          <div className="px-8 py-6">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+                Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {user.firstName}!
+              </h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Here's what's happening with your finances today.
+              </p>
+            </div>
           </div>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-          >
-            Logout
-          </Button>
-        </div>
-      </header>
+        </header>
 
-      <div className="relative container mx-auto px-4 py-8 space-y-6">
-        {/* Consent Status */}
-        {!user.consentStatus.active && (
-          <div className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-6 backdrop-blur-xl">
-            <h3 className="text-lg font-light tracking-tight text-yellow-200 mb-2">Consent Required</h3>
-            <p className="text-sm font-light tracking-tight text-yellow-100/70 mb-4">
-              Grant consent to receive personalized financial recommendations
-            </p>
-            <Button className="border-yellow-400/20 bg-yellow-400/10 text-yellow-100 hover:bg-yellow-400/20">
-              Grant Consent
-            </Button>
-          </div>
-        )}
+        <div className="px-8 py-6 space-y-6">
+          {/* Consent Status */}
+          {!user.consentStatus.active && (
+            <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-6">
+              <h3 className="text-lg font-medium text-yellow-900 mb-2">Consent Required</h3>
+              <p className="text-sm text-yellow-800 mb-4">
+                Grant consent to receive personalized financial recommendations
+              </p>
+              <Button className="bg-yellow-600 hover:bg-yellow-700 text-white">
+                Grant Consent
+              </Button>
+            </div>
+          )}
 
-        {/* Main Dashboard - Always show! */}
-        <div>
-          <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">Dashboard</h2>
-          <p className="text-sm font-light tracking-tight text-white/60">Your complete financial overview</p>
-        </div>
+          {/* Stat Cards - Only if signals exist */}
+          {signal180d && <StatCards signals={signal180d} accounts={accounts} />}
 
-        {/* Stat Cards - Only if signals exist */}
-        {signal180d && <StatCards signals={signal180d} accounts={accounts} />}
-
-        {/* Tabs Navigation */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-white/10 border border-white/10 backdrop-blur-xl">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="transactions" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
-              Transactions
-            </TabsTrigger>
-            <TabsTrigger value="accounts" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
-              Accounts
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
-              Insights
-            </TabsTrigger>
-          </TabsList>
+          {/* Tabs Navigation */}
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="bg-white border border-gray-200">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 text-gray-600">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="transactions" className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 text-gray-600">
+                Transactions
+              </TabsTrigger>
+              <TabsTrigger value="accounts" className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 text-gray-600">
+                Accounts
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 text-gray-600">
+                Insights
+              </TabsTrigger>
+            </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
@@ -230,15 +220,15 @@ export default function UserDashboard() {
           {/* Insights Tab */}
           <TabsContent value="insights" className="space-y-6">
             {recommendations.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-12 backdrop-blur-xl text-center space-y-6">
-                <div className="mx-auto w-16 h-16 rounded-full border-2 border-white/10 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="rounded-xl border border-gray-200 bg-white p-12 text-center space-y-6">
+                <div className="mx-auto w-16 h-16 rounded-full border-2 border-gray-200 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-extralight tracking-tight text-white">Get Personalized Insights</h3>
-                  <p className="text-sm font-light tracking-tight text-white/70 max-w-md mx-auto">
+                  <h3 className="text-2xl font-semibold text-gray-900">Get Personalized Insights</h3>
+                  <p className="text-sm text-gray-600 max-w-md mx-auto">
                     {processing 
                       ? 'Analyzing your financial data with AI... This may take a few minutes.' 
                       : 'Click below to analyze your spending patterns and get AI-powered recommendations tailored to your financial behavior.'
@@ -247,8 +237,8 @@ export default function UserDashboard() {
                 </div>
                 {processing && (
                   <div className="mx-auto w-64">
-                    <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                      <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-purple-500 to-purple-300 animate-pulse" />
+                    <div className="h-1 rounded-full bg-gray-200 overflow-hidden">
+                      <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 animate-pulse" />
                     </div>
                   </div>
                 )}
@@ -262,45 +252,45 @@ export default function UserDashboard() {
                 </Button>
               </div>
             ) : (
-                  <div className="space-y-4">
-                    {recommendations.map((rec) => (
-                      <div key={rec.id} className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl space-y-4">
-                        <div>
-                          <h3 className="text-lg font-light tracking-tight text-white mb-2">{rec.title}</h3>
-                          <p className="text-sm font-light tracking-tight text-white/60">{rec.description}</p>
-                        </div>
+              <div className="space-y-4">
+                {recommendations.map((rec) => (
+                  <div key={rec.id} className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{rec.title}</h3>
+                      <p className="text-sm text-gray-600">{rec.description}</p>
+                    </div>
 
-                        <div>
-                          <h4 className="text-sm font-light tracking-tight text-white/70 mb-2">Why this matters to you:</h4>
-                          <p className="text-sm font-light tracking-tight text-white/60">{rec.rationale}</p>
-                        </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Why this matters to you:</h4>
+                      <p className="text-sm text-gray-600">{rec.rationale}</p>
+                    </div>
 
-                        {rec.educationalContent && (
-                          <div className="rounded-xl border border-blue-400/20 bg-blue-500/10 p-4">
-                            <h4 className="text-sm font-light tracking-tight text-blue-200 mb-2">Learn More:</h4>
-                            <p className="text-sm font-light tracking-tight text-blue-100/70">{rec.educationalContent}</p>
-                          </div>
-                        )}
-
-                        <div>
-                          <h4 className="text-sm font-light tracking-tight text-white/70 mb-2">Action steps:</h4>
-                          <ul className="space-y-2">
-                            {rec.actionItems.map((item, idx) => (
-                              <li key={idx} className="flex gap-2 text-sm font-light tracking-tight text-white/60">
-                                <span className="text-purple-400 mt-1">→</span>
-                                <span>{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div className="pt-4 border-t border-white/10">
-                          <p className="text-xs font-light tracking-tight text-white/40 italic">
-                            {rec.disclaimer}
-                          </p>
-                        </div>
+                    {rec.educationalContent && (
+                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                        <h4 className="text-sm font-medium text-blue-900 mb-2">Learn More:</h4>
+                        <p className="text-sm text-blue-800">{rec.educationalContent}</p>
                       </div>
-                    ))}
+                    )}
+
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Action steps:</h4>
+                      <ul className="space-y-2">
+                        {rec.actionItems.map((item, idx) => (
+                          <li key={idx} className="flex gap-2 text-sm text-gray-600">
+                            <span className="text-purple-600 mt-1">→</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-200">
+                      <p className="text-xs text-gray-500 italic">
+                        {rec.disclaimer}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </TabsContent>

@@ -91,11 +91,11 @@ export function IncomeExpenseChart({ transactions, days = 30 }: IncomeExpenseCha
   }
 
   return (
-    <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
+    <Card className="border-gray-200 bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-white font-extralight">Income vs Expenses</CardTitle>
-        <CardDescription className="text-white/60">
-          Last {days} days - Net: <span className={`font-medium ${totals.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+        <CardTitle className="text-gray-900 font-semibold">Income vs Expenses</CardTitle>
+        <CardDescription className="text-gray-600">
+          Last {days} days - Net: <span className={`font-medium ${totals.net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             ${Math.abs(totals.net).toFixed(0)}
           </span>
         </CardDescription>
@@ -113,24 +113,24 @@ export function IncomeExpenseChart({ transactions, days = 30 }: IncomeExpenseCha
                 <stop offset="95%" stopColor="var(--color-expenses)" stopOpacity={0.1} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-white/10" />
+            <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-gray-200" />
             <XAxis
               dataKey="date"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              className="text-white/60"
+              className="text-gray-600"
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              className="text-white/60"
+              className="text-gray-600"
               tickFormatter={(value) => `$${value}`}
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="dot" className="border-white/20 bg-black/90 backdrop-blur-xl" />}
+              content={<ChartTooltipContent indicator="dot" />}
             />
             <Area
               dataKey="income"
@@ -148,7 +148,7 @@ export function IncomeExpenseChart({ transactions, days = 30 }: IncomeExpenseCha
               stroke="var(--color-expenses)"
               strokeWidth={2}
             />
-            <ChartLegend content={<ChartLegendContent className="text-white/70" />} />
+            <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
         </ChartContainer>
       </CardContent>
