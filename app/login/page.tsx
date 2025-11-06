@@ -132,39 +132,42 @@ export default function LoginPage() {
     }
   };
 
-  const handleConsentAccept = async () => {
+  const handleConsentAccept = () => {
     if (!pendingUserId) return;
     
-    // Close modal immediately for demo purposes
+    // Close modal immediately
     setShowConsentModal(false);
     setLoading(true);
     
-    try {
-      // Grant consent (demo - runs in background)
-      fetch('/api/consent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: pendingUserId }),
-      });
+    // Defer async operations to next tick to allow UI to update
+    setTimeout(async () => {
+      try {
+        // Grant consent (demo - runs in background)
+        fetch('/api/consent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: pendingUserId }),
+        });
 
-      // Login
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: pendingUserId,
-          role: 'user',
-        }),
-      });
+        // Login
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: pendingUserId,
+            role: 'user',
+          }),
+        });
 
-      if (response.ok) {
-        router.push(`/user/${pendingUserId}`);
+        if (response.ok) {
+          router.push(`/user/${pendingUserId}`);
+        }
+      } catch (error) {
+        console.error('Consent error:', error);
+        setError('Failed to process consent');
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Consent error:', error);
-      setError('Failed to process consent');
-      setLoading(false);
-    }
+    }, 0);
   };
 
   const handleConsentDecline = () => {
