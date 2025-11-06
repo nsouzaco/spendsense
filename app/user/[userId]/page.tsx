@@ -73,14 +73,29 @@ export default function UserDashboard() {
   const handleProcessData = async () => {
     setProcessing(true);
     try {
-      const res = await fetch('/api/process', { method: 'POST' });
+      const res = await fetch('/api/process', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
+      
       if (data.success) {
         await loadUserData();
-        alert(`Processing complete! ${data.data.processed} users processed.`);
+        // Show success without alert
+        console.log(`Processing complete! ${data.data.processed} users processed.`);
+      } else {
+        throw new Error(data.error?.message || 'Processing failed');
       }
     } catch (error) {
-      alert('Error processing data');
+      console.error('Error processing data:', error);
+      // Don't show alert, just log the error
     } finally {
       setProcessing(false);
     }
@@ -162,126 +177,91 @@ export default function UserDashboard() {
           </div>
         )}
 
-        {/* Main Dashboard */}
-        {!signal180d ? (
-          // No signals yet - show onboarding message
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-12 backdrop-blur-xl text-center space-y-6">
-            <div className="mx-auto w-16 h-16 rounded-full border-2 border-white/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+        {/* Main Dashboard - Always show! */}
+        <div>
+          <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">Dashboard</h2>
+          <p className="text-sm font-light tracking-tight text-white/60">Your complete financial overview</p>
+        </div>
+
+        {/* Stat Cards - Only if signals exist */}
+        {signal180d && <StatCards signals={signal180d} accounts={accounts} />}
+
+        {/* Tabs Navigation */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="bg-white/10 border border-white/10 backdrop-blur-xl">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="transactions" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
+              Transactions
+            </TabsTrigger>
+            <TabsTrigger value="accounts" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
+              Accounts
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
+              Insights
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <IncomeExpenseChart transactions={transactions} days={30} />
+              <CategoryBarChart transactions={transactions} />
             </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-extralight tracking-tight text-white">Welcome to SpendSense!</h3>
-              <p className="text-sm font-light tracking-tight text-white/70 max-w-md mx-auto">
-                {processing 
-                  ? 'Analyzing your financial data with AI... This may take a few minutes.' 
-                  : 'Your financial data is ready. Click below to analyze your spending patterns and generate personalized insights.'
-                }
-              </p>
+            {signal180d && <RecurringSubscriptions signals={signal180d} />}
+            <TransactionTable transactions={transactions} limit={10} />
+          </TabsContent>
+
+          {/* Transactions Tab */}
+          <TabsContent value="transactions" className="space-y-6">
+            <TransactionTable transactions={transactions} />
+          </TabsContent>
+
+          {/* Accounts Tab */}
+          <TabsContent value="accounts" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {accounts.map(account => (
+                <AccountCard key={account.id} account={account} variant="default" />
+              ))}
             </div>
-            {processing && (
-              <div className="mx-auto w-64">
-                <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-purple-500 to-purple-300 animate-pulse" />
+          </TabsContent>
+
+          {/* Insights Tab */}
+          <TabsContent value="insights" className="space-y-6">
+            {recommendations.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-12 backdrop-blur-xl text-center space-y-6">
+                <div className="mx-auto w-16 h-16 rounded-full border-2 border-white/10 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
                 </div>
-                <p className="text-xs font-light tracking-tight text-white/50 mt-3">
-                  Generating personalized recommendations...
-                </p>
-              </div>
-            )}
-            <Button 
-              onClick={handleProcessData} 
-              disabled={processing}
-              size="lg"
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              {processing ? 'Processing... Please wait' : '🚀 Analyze My Finances'}
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div>
-              <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">Dashboard</h2>
-              <p className="text-sm font-light tracking-tight text-white/60">Your complete financial overview</p>
-            </div>
-
-            {/* Stat Cards */}
-            <StatCards signals={signal180d} accounts={accounts} />
-
-            {/* Tabs Navigation */}
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="bg-white/10 border border-white/10 backdrop-blur-xl">
-                <TabsTrigger value="overview" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger value="transactions" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
-                  Transactions
-                </TabsTrigger>
-                <TabsTrigger value="accounts" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
-                  Accounts
-                </TabsTrigger>
-                <TabsTrigger value="insights" className="data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/60">
-                  Insights
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="space-y-6">
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <IncomeExpenseChart transactions={transactions} days={30} />
-                  <CategoryBarChart transactions={transactions} />
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-extralight tracking-tight text-white">Get Personalized Insights</h3>
+                  <p className="text-sm font-light tracking-tight text-white/70 max-w-md mx-auto">
+                    {processing 
+                      ? 'Analyzing your financial data with AI... This may take a few minutes.' 
+                      : 'Click below to analyze your spending patterns and get AI-powered recommendations tailored to your financial behavior.'
+                    }
+                  </p>
                 </div>
-                <RecurringSubscriptions signals={signal180d} />
-                <TransactionTable transactions={transactions} limit={10} />
-              </TabsContent>
-
-              {/* Transactions Tab */}
-              <TabsContent value="transactions" className="space-y-6">
-                <TransactionTable transactions={transactions} />
-              </TabsContent>
-
-              {/* Accounts Tab */}
-              <TabsContent value="accounts" className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {accounts.map(account => (
-                    <AccountCard key={account.id} account={account} variant="default" />
-                  ))}
-                </div>
-              </TabsContent>
-
-              {/* Insights Tab */}
-              <TabsContent value="insights" className="space-y-6">
-                {recommendations.length === 0 ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-12 backdrop-blur-xl text-center space-y-6">
-                    <div className="mx-auto w-16 h-16 rounded-full border-2 border-white/10 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
+                {processing && (
+                  <div className="mx-auto w-64">
+                    <div className="h-1 rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-purple-500 to-purple-300 animate-pulse" />
                     </div>
-                    <p className="text-sm font-light tracking-tight text-white/70">
-                      {processing 
-                        ? 'Analyzing your financial data with AI... This may take a few minutes.' 
-                        : 'No recommendations available yet. Click below to analyze your financial data.'
-                      }
-                    </p>
-                    {processing && (
-                      <div className="mx-auto w-64">
-                        <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                          <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-purple-500 to-purple-300 animate-pulse" />
-                        </div>
-                      </div>
-                    )}
-                    <Button 
-                      onClick={handleProcessData} 
-                      disabled={processing}
-                      variant="outline"
-                      className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-                    >
-                      {processing ? 'Processing... Please wait' : 'Analyze My Finances'}
-                    </Button>
                   </div>
-                ) : (
+                )}
+                <Button 
+                  onClick={handleProcessData} 
+                  disabled={processing}
+                  size="lg"
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {processing ? 'Processing... Please wait' : '💡 Generate Insights'}
+                </Button>
+              </div>
+            ) : (
                   <div className="space-y-4">
                     {recommendations.map((rec) => (
                       <div key={rec.id} className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl space-y-4">
@@ -321,12 +301,10 @@ export default function UserDashboard() {
                         </div>
                       </div>
                     ))}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </>
-        )}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
