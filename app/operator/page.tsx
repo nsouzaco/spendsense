@@ -149,22 +149,12 @@ export default function OperatorDashboard() {
               )}
             </div>
             
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-                <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">Total Users</h3>
-                <p className="text-4xl font-extralight tracking-tight text-white">{metrics.totalUsers}</p>
-                <p className="text-xs font-light tracking-tight text-white/50 mt-2">
-                  Registered on platform
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-                <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">Analyzed Users</h3>
-                <p className="text-4xl font-extralight tracking-tight text-white">{metrics.usersWithPersona}</p>
-                <p className="text-xs font-light tracking-tight text-white/50 mt-2">
-                  {metrics.coveragePercentage.toFixed(1)}% of total users
-                </p>
-              </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl max-w-sm">
+              <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">Total Users</h3>
+              <p className="text-4xl font-extralight tracking-tight text-white">{metrics.totalUsers}</p>
+              <p className="text-xs font-light tracking-tight text-white/50 mt-2">
+                Registered on platform
+              </p>
             </div>
 
             {/* User Financial Categories */}
