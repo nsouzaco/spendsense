@@ -18,21 +18,25 @@ const highUtilizationCriteria: PersonaCriteria = {
   checkCriteria: (signals: SignalResult) => {
     const { creditSignals } = signals;
     
-    // Any credit card with utilization ≥50%
+    // Must have at least one credit card
+    if (creditSignals.cards.length === 0) return false;
+    
+    // Any credit card with utilization ≥70% (raised from 50%)
     const hasHighUtilization = creditSignals.cards.some(
-      card => card.utilization >= CREDIT_THRESHOLDS.MEDIUM
+      card => card.utilization >= 0.70
     );
     
-    // OR interest charges > 0
-    const hasInterestCharges = creditSignals.totalInterestCharges > 0;
+    // High interest charges (> $50/month, not just any amount)
+    const hasHighInterestCharges = creditSignals.totalInterestCharges > 50;
     
-    // OR minimum-payment-only behavior detected
+    // Minimum-payment-only behavior
     const hasMinimumPaymentOnly = creditSignals.hasMinimumPaymentOnly;
     
-    // OR overdue status flagged
+    // Overdue status
     const hasOverdue = creditSignals.hasOverdue;
     
-    return hasHighUtilization || hasInterestCharges || hasMinimumPaymentOnly || hasOverdue;
+    // Require EITHER very high utilization OR multiple bad behaviors
+    return hasHighUtilization || (hasMinimumPaymentOnly && hasHighInterestCharges) || hasOverdue;
   },
   
   generateRationale: (signals: SignalResult) => {
@@ -80,13 +84,11 @@ const variableIncomeBudgeterCriteria: PersonaCriteria = {
   checkCriteria: (signals: SignalResult) => {
     const { incomeSignals } = signals;
     
-    // Median pay gap > 45 days
+    // High income variability (>25%) OR has income gaps
+    const highVariability = incomeSignals.paymentVariability > 0.25;
     const hasIncomeGap = incomeSignals.hasIncomeGap;
     
-    // AND cash-flow buffer < 1 month
-    const lowCashFlowBuffer = incomeSignals.cashFlowBuffer < INCOME_THRESHOLDS.MIN_BUFFER_MONTHS;
-    
-    return hasIncomeGap && lowCashFlowBuffer;
+    return highVariability || hasIncomeGap;
   },
   
   generateRationale: (signals: SignalResult) => {
@@ -158,16 +160,17 @@ const savingsBuilderCriteria: PersonaCriteria = {
   checkCriteria: (signals: SignalResult) => {
     const { savingsSignals, creditSignals } = signals;
     
-    // Savings growth rate ≥2% over window OR net savings inflow ≥$200/month
+    // Has savings balance > $5000 OR growing at good rate
+    const hasSavings = savingsSignals.currentSavingsBalance > 5000;
     const monthlyInflow = (savingsSignals.netInflow / (signals.window === '30d' ? 30 : 180)) * 30;
     const goodGrowth = savingsSignals.growthRate >= SAVINGS_THRESHOLDS.MIN_GROWTH_RATE;
     const goodInflow = monthlyInflow >= SAVINGS_THRESHOLDS.MIN_MONTHLY_INFLOW;
     
-    // AND all credit card utilizations < 30%
+    // AND all credit card utilizations < 40%
     const lowUtilization = creditSignals.cards.length === 0 ||
-      creditSignals.cards.every(card => card.utilization < CREDIT_THRESHOLDS.LOW);
+      creditSignals.cards.every(card => card.utilization < 0.40);
     
-    return (goodGrowth || goodInflow) && lowUtilization;
+    return (hasSavings || goodGrowth || goodInflow) && lowUtilization;
   },
   
   generateRationale: (signals: SignalResult) => {
