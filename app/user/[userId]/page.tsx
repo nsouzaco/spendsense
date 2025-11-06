@@ -173,8 +173,8 @@ export default function UserDashboard() {
             </div>
           )}
 
-          {/* Stat Cards - Only if signals exist */}
-          {signal180d && <StatCards signals={signal180d} accounts={accounts} />}
+          {/* Stat Cards - Always show */}
+          <StatCards signals={signal180d} accounts={accounts} />
 
           {/* Tabs Navigation */}
           <Tabs defaultValue="overview" className="space-y-6">
