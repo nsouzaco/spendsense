@@ -111,11 +111,17 @@ export function StatCards({ signals, accounts, transactions }: StatCardsProps) {
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-600">Emergency Fund</p>
             <p className="text-3xl font-semibold text-gray-900">
-              {emergencyFund.toFixed(1)} <span className="text-xl text-gray-600">months</span>
+              {formatCurrency(savingsBalance)}
             </p>
-            <p className="text-xs text-gray-500">
-              {formatCurrency(savingsBalance)} saved
-            </p>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={`${
+                emergencyFund >= 6 ? 'border-green-300 bg-green-50 text-green-700' :
+                emergencyFund >= 3 ? 'border-yellow-300 bg-yellow-50 text-yellow-700' :
+                'border-red-300 bg-red-50 text-red-700'
+              }`}>
+                {emergencyFund > 0 ? `${emergencyFund.toFixed(1)} months` : 'building'}
+              </Badge>
+            </div>
           </div>
         </CardContent>
       </Card>
