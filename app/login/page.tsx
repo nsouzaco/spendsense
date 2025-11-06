@@ -135,10 +135,13 @@ export default function LoginPage() {
   const handleConsentAccept = async () => {
     if (!pendingUserId) return;
     
+    // Close modal immediately for demo purposes
+    setShowConsentModal(false);
     setLoading(true);
+    
     try {
-      // Grant consent
-      await fetch('/api/consent', {
+      // Grant consent (demo - runs in background)
+      fetch('/api/consent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: pendingUserId }),
