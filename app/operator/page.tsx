@@ -11,6 +11,8 @@ export default function OperatorDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -286,8 +288,8 @@ export default function OperatorDashboard() {
                   <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Name</th>
                   <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Email</th>
                   <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Consent</th>
-                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Persona</th>
-                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Recs</th>
+                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">User Category</th>
+                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Profile</th>
                 </tr>
               </thead>
               <tbody>
@@ -314,13 +316,149 @@ export default function OperatorDashboard() {
                         <span className="text-sm font-light tracking-tight text-white/40">None</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm font-light tracking-tight text-white/70">{user.recommendationCount || 0}</td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setShowUserModal(true);
+                        }}
+                        className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-light tracking-tight text-white/80 backdrop-blur-sm transition-colors hover:bg-white/10"
+                      >
+                        View Profile
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
+
+        {/* User Profile Modal */}
+        {showUserModal && selectedUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="relative w-full max-w-3xl mx-4 rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900 via-gray-900 to-black p-8 backdrop-blur-xl max-h-[90vh] overflow-y-auto">
+              {/* Close button */}
+              <button
+                onClick={() => setShowUserModal(false)}
+                className="absolute top-4 right-4 rounded-lg border border-white/10 bg-white/5 p-2 text-white/70 backdrop-blur-sm transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Header */}
+              <div className="mb-6">
+                <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">
+                  {selectedUser.firstName} {selectedUser.lastName}
+                </h2>
+                <p className="text-sm font-light tracking-tight text-white/60">{selectedUser.email}</p>
+              </div>
+
+              {/* Info Grid */}
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-lg font-light tracking-tight text-white mb-3">Basic Information</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">User ID</p>
+                      <p className="text-sm font-mono tracking-tight text-white">{selectedUser.id}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">Date of Birth</p>
+                      <p className="text-sm font-light tracking-tight text-white">{selectedUser.dateOfBirth || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">Phone</p>
+                      <p className="text-sm font-light tracking-tight text-white">{selectedUser.phone || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">Account Created</p>
+                      <p className="text-sm font-light tracking-tight text-white">
+                        {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Consent Status */}
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-lg font-light tracking-tight text-white mb-3">Consent Status</h3>
+                  <div className="flex items-center gap-3">
+                    <span className={`inline-flex rounded-full px-3 py-1.5 text-sm font-light tracking-tight ${
+                      selectedUser.consentStatus.active 
+                        ? 'bg-green-500/20 text-green-200 border border-green-500/30' 
+                        : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
+                    }`}>
+                      {selectedUser.consentStatus.active ? 'Active' : 'Inactive'}
+                    </span>
+                    {selectedUser.consentStatus.grantedAt && (
+                      <p className="text-sm font-light tracking-tight text-white/60">
+                        Granted: {new Date(selectedUser.consentStatus.grantedAt).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Financial Category */}
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-lg font-light tracking-tight text-white mb-3">Financial Category</h3>
+                  {selectedUser.primaryPersona ? (
+                    <div className="space-y-2">
+                      <span className="inline-flex rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1.5 text-sm font-light tracking-tight text-purple-200">
+                        {selectedUser.primaryPersona}
+                      </span>
+                      <p className="text-sm font-light tracking-tight text-white/60 mt-2">
+                        Total personas: {selectedUser.personaCount || 1}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm font-light tracking-tight text-white/60">No persona assigned</p>
+                  )}
+                </div>
+
+                {/* Analytics */}
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <h3 className="text-lg font-light tracking-tight text-white mb-3">Analytics</h3>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">Signals</p>
+                      <p className="text-2xl font-extralight tracking-tight text-white">{selectedUser.signalCount || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">Recommendations</p>
+                      <p className="text-2xl font-extralight tracking-tight text-white">{selectedUser.recommendationCount || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">Personas</p>
+                      <p className="text-2xl font-extralight tracking-tight text-white">{selectedUser.personaCount || 0}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={() => setShowUserModal(false)}
+                  className="rounded-xl border border-white/10 bg-white/5 px-6 py-2 text-sm font-light tracking-tight text-white/80 backdrop-blur-sm transition-colors hover:bg-white/10"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    router.push(`/user/${selectedUser.id}`);
+                  }}
+                  className="rounded-xl border border-purple-500/30 bg-purple-500/20 px-6 py-2 text-sm font-light tracking-tight text-purple-200 backdrop-blur-sm transition-colors hover:bg-purple-500/30"
+                >
+                  View Full Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
