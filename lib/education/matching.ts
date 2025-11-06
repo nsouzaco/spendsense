@@ -78,15 +78,17 @@ function calculateRelevanceScore(
 
   score += 0.5; // Base score for persona match
 
-  // Bonus points for matching specific signals
+  // Check required signals - if article has specific requirements, user MUST meet them
   if (article.requiredSignals) {
     const { requiredSignals } = article;
 
-    // Credit utilization signals
+    // Credit utilization requirements (FILTER OUT if not met)
     if (requiredSignals.minCreditUtilization !== undefined) {
       const avgUtilization = calculateAverageCreditUtilization(signals);
       if (avgUtilization >= requiredSignals.minCreditUtilization) {
-        score += 0.2;
+        score += 0.3; // Strong match
+      } else {
+        return 0; // FILTER OUT - user doesn't have this problem
       }
     }
 
@@ -94,24 +96,42 @@ function calculateRelevanceScore(
       const avgUtilization = calculateAverageCreditUtilization(signals);
       if (avgUtilization <= requiredSignals.maxCreditUtilization) {
         score += 0.2;
+      } else {
+        return 0; // FILTER OUT - user exceeds this threshold
       }
     }
 
-    // Subscription signals
-    if (requiredSignals.hasSubscriptions && signals.subscriptionSignals.totalRecurringCount >= 5) {
-      score += 0.15;
+    // Subscription requirement (FILTER OUT if not met)
+    if (requiredSignals.hasSubscriptions !== undefined) {
+      const hasMany = signals.subscriptionSignals.totalRecurringCount >= 5;
+      if (requiredSignals.hasSubscriptions && hasMany) {
+        score += 0.2;
+      } else if (requiredSignals.hasSubscriptions && !hasMany) {
+        return 0; // FILTER OUT - user doesn't have many subscriptions
+      }
     }
 
-    // Savings signals
-    if (requiredSignals.hasSavings && signals.savingsSignals.currentSavingsBalance > 1000) {
-      score += 0.15;
+    // Savings requirement (be lenient here)
+    if (requiredSignals.hasSavings !== undefined) {
+      const hasSavings = signals.savingsSignals.currentSavingsBalance > 1000;
+      if (requiredSignals.hasSavings && hasSavings) {
+        score += 0.2;
+      } else if (requiredSignals.hasSavings && !hasSavings) {
+        score += 0.1; // Still show but lower priority
+      }
     }
 
-    // Income signals
-    if (requiredSignals.hasVariableIncome && !signals.incomeSignals.hasPayrollPattern) {
-      score += 0.2;
+    // Variable income requirement (FILTER OUT if not met)
+    if (requiredSignals.hasVariableIncome !== undefined) {
+      const hasVariable = !signals.incomeSignals.hasPayrollPattern;
+      if (requiredSignals.hasVariableIncome && hasVariable) {
+        score += 0.2;
+      } else if (requiredSignals.hasVariableIncome && !hasVariable) {
+        return 0; // FILTER OUT - user has steady income
+      }
     }
 
+    // Income requirement
     if (requiredSignals.maxIncome !== undefined) {
       const annualIncome = signals.incomeSignals.estimatedAnnualIncome;
       if (annualIncome <= requiredSignals.maxIncome) {
