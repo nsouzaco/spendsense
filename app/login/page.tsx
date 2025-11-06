@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 // Consent Modal Component
 function ConsentModal({ onAccept, onDecline }: { onAccept: () => void; onDecline: () => void }) {
@@ -181,14 +180,6 @@ export default function LoginPage() {
       {/* Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-black to-black" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-600/20 via-transparent to-transparent" />
-      
-      {/* Back Button */}
-      <Link 
-        href="/"
-        className="absolute top-6 left-6 z-10 rounded-2xl border border-white/10 px-4 py-2 text-sm font-light text-white/80 backdrop-blur-sm transition-colors hover:bg-white/5"
-      >
-        ← Back
-      </Link>
 
       {/* Login Card */}
       <div className="relative flex min-h-screen items-center justify-center px-4">
