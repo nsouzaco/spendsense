@@ -33,10 +33,10 @@ export function RecurringSubscriptions({ signals }: RecurringSubscriptionsProps)
 
   if (!subscriptions || subscriptions.totalRecurringCount === 0) {
     return (
-      <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
+      <Card className="border-gray-200 bg-white shadow-sm">
         <CardContent className="p-12">
-          <div className="flex items-center justify-center text-white/40">
-            <p className="text-sm font-light tracking-tight">No recurring subscriptions detected</p>
+          <div className="flex items-center justify-center text-gray-500">
+            <p className="text-sm">No recurring subscriptions detected</p>
           </div>
         </CardContent>
       </Card>
@@ -51,28 +51,28 @@ export function RecurringSubscriptions({ signals }: RecurringSubscriptionsProps)
   };
 
   return (
-    <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
+    <Card className="border-gray-200 bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-white font-extralight">Recurring Subscriptions</CardTitle>
-        <CardDescription className="text-white/60">
+        <CardTitle className="text-gray-900 font-semibold">Recurring Subscriptions</CardTitle>
+        <CardDescription className="text-gray-600">
           {subscriptions.totalRecurringCount} active subscriptions • ${subscriptions.monthlyRecurringSpend.toFixed(0)}/month
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {/* Total spending indicator */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-light text-white/70">Monthly Recurring Spend</span>
-              <span className="text-lg font-extralight text-white">
+              <span className="text-sm font-medium text-gray-700">Monthly Recurring Spend</span>
+              <span className="text-lg font-semibold text-gray-900">
                 ${subscriptions.monthlyRecurringSpend.toFixed(2)}
               </span>
             </div>
             <Progress
               value={subscriptions.subscriptionShare}
-              className="h-2 bg-white/10"
+              className="h-2 bg-gray-200"
             />
-            <p className="text-xs font-light text-white/50 mt-2">
+            <p className="text-xs text-gray-500 mt-2">
               {subscriptions.subscriptionShare.toFixed(1)}% of total spending
             </p>
           </div>
@@ -82,27 +82,27 @@ export function RecurringSubscriptions({ signals }: RecurringSubscriptionsProps)
             {subscriptions.recurringMerchants.slice(0, 8).map((merchant, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-3 hover:bg-white/10 transition-colors"
+                className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3 hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">{getMerchantIcon(merchant.merchantName)}</div>
                   <div>
-                    <p className="font-light text-white">{merchant.merchantName}</p>
+                    <p className="font-medium text-gray-900">{merchant.merchantName}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className="border-white/20 bg-white/5 text-white/60 text-xs">
+                      <Badge variant="outline" className="border-gray-300 bg-white text-gray-700 text-xs">
                         {merchant.cadence}
                       </Badge>
-                      <span className="text-xs font-light text-white/50">
+                      <span className="text-xs text-gray-500">
                         {merchant.occurrences}x
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-light text-white">
+                  <p className="font-medium text-gray-900">
                     ${merchant.averageAmount.toFixed(2)}
                   </p>
-                  <p className="text-xs font-light text-white/50">
+                  <p className="text-xs text-gray-500">
                     ${merchant.totalAmount.toFixed(0)} total
                   </p>
                 </div>
