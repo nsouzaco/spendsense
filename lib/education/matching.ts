@@ -11,27 +11,37 @@ export function matchArticlesForUser(
   signals: SignalResult | null,
   personas: PersonaAssignment[]
 ): UserArticleRecommendation[] {
-  if (!signals || personas.length === 0) {
-    // Return generic beginner articles if no persona/signals
+  // If we have signals but no personas, match based on signals alone
+  if (!signals) {
+    // No data at all - show universal beginner content
     return EDUCATION_ARTICLES
-      .filter(article => article.difficulty === 'beginner')
+      .filter(article => 
+        article.category === 'emergency_fund' || 
+        article.category === 'budgeting'
+      )
       .slice(0, 4)
       .map(article => ({
         article,
         relevanceScore: 0.5,
-        reason: 'Recommended for all users',
+        reason: 'Essential financial literacy for everyone',
       }));
   }
 
   const recommendations: UserArticleRecommendation[] = [];
-  const primaryPersona = personas[0];
   const personaTypes = personas.map(p => p.personaType);
+  const hasPersonas = personas.length > 0;
 
   for (const article of EDUCATION_ARTICLES) {
-    const score = calculateRelevanceScore(article, personaTypes, signals);
+    // Calculate relevance based on signals and personas (if available)
+    const score = hasPersonas 
+      ? calculateRelevanceScore(article, personaTypes, signals)
+      : calculateSignalBasedRelevance(article, signals);
     
     if (score > 0) {
-      const reason = generateRecommendationReason(article, primaryPersona.personaType, signals);
+      const reason = hasPersonas
+        ? generateRecommendationReason(article, personas[0].personaType, signals)
+        : generateSignalBasedReason(article, signals);
+      
       recommendations.push({
         article,
         relevanceScore: score,
@@ -166,6 +176,138 @@ function generateRecommendationReason(
   }
 
   return reasons[0] || 'Recommended based on your financial profile';
+}
+
+/**
+ * Calculate relevance based purely on signals (when no persona is assigned)
+ */
+function calculateSignalBasedRelevance(
+  article: EducationArticle,
+  signals: SignalResult
+): number {
+  let score = 0;
+
+  // Check if article's required signals match user's actual signals
+  if (article.requiredSignals) {
+    const { requiredSignals } = article;
+
+    // Credit utilization check
+    if (requiredSignals.minCreditUtilization !== undefined || requiredSignals.maxCreditUtilization !== undefined) {
+      const avgUtilization = calculateAverageCreditUtilization(signals);
+      
+      // Only match if user meets the criteria
+      if (requiredSignals.minCreditUtilization !== undefined) {
+        if (avgUtilization >= requiredSignals.minCreditUtilization) {
+          score += 0.6; // Strong match
+        } else {
+          return 0; // User doesn't have this issue - don't recommend
+        }
+      }
+      
+      if (requiredSignals.maxCreditUtilization !== undefined) {
+        if (avgUtilization <= requiredSignals.maxCreditUtilization) {
+          score += 0.4;
+        }
+      }
+    }
+
+    // Subscription check
+    if (requiredSignals.hasSubscriptions !== undefined) {
+      const hasMany = signals.subscriptionSignals.totalRecurringCount >= 5;
+      if (requiredSignals.hasSubscriptions && hasMany) {
+        score += 0.6;
+      } else if (requiredSignals.hasSubscriptions && !hasMany) {
+        return 0; // User doesn't have many subscriptions
+      }
+    }
+
+    // Savings check
+    if (requiredSignals.hasSavings !== undefined) {
+      const hasSavings = signals.savingsSignals.currentSavingsBalance > 1000;
+      if (requiredSignals.hasSavings && hasSavings) {
+        score += 0.5;
+      } else if (requiredSignals.hasSavings && !hasSavings) {
+        // Still show but lower score
+        score += 0.2;
+      }
+    }
+
+    // Variable income check
+    if (requiredSignals.hasVariableIncome !== undefined) {
+      const hasVariable = !signals.incomeSignals.hasPayrollPattern;
+      if (requiredSignals.hasVariableIncome && hasVariable) {
+        score += 0.6;
+      } else if (requiredSignals.hasVariableIncome && !hasVariable) {
+        return 0; // User has steady income
+      }
+    }
+
+    // Income check
+    if (requiredSignals.maxIncome !== undefined) {
+      const annualIncome = signals.incomeSignals.estimatedAnnualIncome;
+      if (annualIncome <= requiredSignals.maxIncome) {
+        score += 0.4;
+      }
+    }
+  } else {
+    // No required signals - article is universally relevant
+    score = 0.5;
+  }
+
+  return Math.min(score, 1);
+}
+
+/**
+ * Generate reason based on signals alone (no persona)
+ */
+function generateSignalBasedReason(
+  article: EducationArticle,
+  signals: SignalResult
+): string {
+  // Emergency fund articles
+  if (article.category === 'emergency_fund') {
+    const months = signals.savingsSignals.emergencyFundCoverage;
+    if (months < 3) {
+      return `You have ${months.toFixed(1)} months of emergency savings - build your safety net`;
+    }
+    return 'Strengthen your financial foundation';
+  }
+
+  // Debt/credit articles
+  if (article.category === 'debt_payoff' || article.category === 'credit_management') {
+    const avgUtil = calculateAverageCreditUtilization(signals);
+    if (avgUtil > 0.3) {
+      return `Your credit utilization is ${(avgUtil * 100).toFixed(0)}% - reduce it to improve your score`;
+    }
+    return 'Learn credit management best practices';
+  }
+
+  // Subscription articles
+  if (article.category === 'subscriptions') {
+    const count = signals.subscriptionSignals.totalRecurringCount;
+    if (count >= 5) {
+      return `You have ${count} recurring subscriptions - find potential savings`;
+    }
+    return 'Manage your recurring expenses effectively';
+  }
+
+  // Budgeting articles
+  if (article.category === 'budgeting') {
+    if (!signals.incomeSignals.hasPayrollPattern) {
+      return 'Variable income requires special budgeting strategies';
+    }
+    return 'Master your monthly budget';
+  }
+
+  // Investing articles
+  if (article.category === 'investing') {
+    if (signals.savingsSignals.currentSavingsBalance > 5000) {
+      return 'Your savings are ready to start growing';
+    }
+    return 'Learn the basics of investing';
+  }
+
+  return 'Recommended based on your financial profile';
 }
 
 /**
