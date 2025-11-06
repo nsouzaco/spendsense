@@ -26,7 +26,34 @@ export default function OperatorDashboard() {
       // Load metrics
       const metricsRes = await fetch('/api/operator/metrics');
       const metricsData = await metricsRes.json();
-      if (metricsData.success) setMetrics(metricsData.data);
+      if (metricsData.success) {
+        setMetrics(metricsData.data);
+        
+        // If no personas exist, automatically analyze all users
+        if (metricsData.data.usersWithPersona === 0 && metricsData.data.totalUsers > 0) {
+          console.log('🔍 No personas found, automatically analyzing all users...');
+          setAnalyzing(true);
+          
+          try {
+            const analyzeRes = await fetch('/api/operator/analyze-all', { method: 'POST' });
+            const analyzeData = await analyzeRes.json();
+            
+            if (analyzeData.success) {
+              console.log('✅ Auto-analysis complete, reloading metrics...');
+              // Reload metrics after analysis
+              const updatedMetricsRes = await fetch('/api/operator/metrics');
+              const updatedMetricsData = await updatedMetricsRes.json();
+              if (updatedMetricsData.success) {
+                setMetrics(updatedMetricsData.data);
+              }
+            }
+          } catch (error) {
+            console.error('Error during auto-analysis:', error);
+          } finally {
+            setAnalyzing(false);
+          }
+        }
+      }
 
       setLoading(false);
     } catch (error) {
