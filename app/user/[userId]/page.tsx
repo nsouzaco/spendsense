@@ -174,7 +174,7 @@ export default function UserDashboard() {
           )}
 
           {/* Stat Cards - Always show */}
-          <StatCards signals={signal180d} accounts={accounts} />
+          <StatCards signals={signal180d} accounts={accounts} transactions={transactions} />
 
           {/* Tabs Navigation */}
           <Tabs defaultValue="overview" className="space-y-6">

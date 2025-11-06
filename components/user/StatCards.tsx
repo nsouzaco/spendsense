@@ -3,14 +3,15 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import type { SignalResult, Account } from '@/types';
+import type { SignalResult, Account, Transaction } from '@/types';
 
 interface StatCardsProps {
   signals?: SignalResult;
   accounts: Account[];
+  transactions: Transaction[];
 }
 
-export function StatCards({ signals, accounts }: StatCardsProps) {
+export function StatCards({ signals, accounts, transactions }: StatCardsProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -24,15 +25,39 @@ export function StatCards({ signals, accounts }: StatCardsProps) {
     .filter(a => a.type === 'depository')
     .reduce((sum, a) => sum + a.currentBalance, 0);
 
-  // Calculate credit utilization from accounts if signals not available
+  // Calculate credit utilization from accounts
   const creditAccounts = accounts.filter(a => a.type === 'credit');
   const totalCreditUsed = creditAccounts.reduce((sum, a) => sum + a.currentBalance, 0);
   const totalCreditLimit = creditAccounts.reduce((sum, a) => sum + (a.creditLimit || 0), 0);
   const calculatedUtilization = totalCreditLimit > 0 ? (totalCreditUsed / totalCreditLimit) * 100 : 0;
   
   const creditUtilization = signals ? signals.creditSignals.highestUtilization * 100 : calculatedUtilization;
-  const emergencyFund = signals?.savingsSignals.emergencyFundCoverage || 0;
-  const monthlyIncome = signals ? signals.incomeSignals.estimatedAnnualIncome / 12 : 0;
+
+  // Calculate monthly income from transactions
+  const now = new Date();
+  const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+  const incomeTransactions = transactions.filter(
+    t => t.transactionType === 'credit' && new Date(t.date) >= sixMonthsAgo
+  );
+  const totalIncome = incomeTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const monthsCovered = Math.min(6, (now.getTime() - sixMonthsAgo.getTime()) / (30 * 24 * 60 * 60 * 1000));
+  const calculatedMonthlyIncome = monthsCovered > 0 ? totalIncome / monthsCovered : 0;
+  
+  const monthlyIncome = signals ? signals.incomeSignals.estimatedAnnualIncome / 12 : calculatedMonthlyIncome;
+
+  // Calculate emergency fund (savings / monthly expenses)
+  const savingsBalance = accounts
+    .filter(a => a.type === 'depository' && a.subtype === 'savings')
+    .reduce((sum, a) => sum + a.currentBalance, 0);
+  
+  const expenseTransactions = transactions.filter(
+    t => t.transactionType === 'debit' && new Date(t.date) >= sixMonthsAgo
+  );
+  const totalExpenses = expenseTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const avgMonthlyExpenses = monthsCovered > 0 ? totalExpenses / monthsCovered : 0;
+  const calculatedEmergencyFund = avgMonthlyExpenses > 0 ? savingsBalance / avgMonthlyExpenses : 0;
+  
+  const emergencyFund = signals?.savingsSignals.emergencyFundCoverage || calculatedEmergencyFund;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -85,21 +110,12 @@ export function StatCards({ signals, accounts }: StatCardsProps) {
         <CardContent className="p-6">
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-600">Emergency Fund</p>
-            {signals ? (
-              <>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {emergencyFund.toFixed(1)} <span className="text-xl text-gray-600">months</span>
-                </p>
-                <p className="text-xs text-gray-500">
-                  {formatCurrency(signals.savingsSignals.currentSavingsBalance)} saved
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-3xl font-semibold text-gray-400">--</p>
-                <p className="text-xs text-gray-500">Click "Generate Insights" to analyze</p>
-              </>
-            )}
+            <p className="text-3xl font-semibold text-gray-900">
+              {emergencyFund.toFixed(1)} <span className="text-xl text-gray-600">months</span>
+            </p>
+            <p className="text-xs text-gray-500">
+              {formatCurrency(savingsBalance)} saved
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -109,23 +125,14 @@ export function StatCards({ signals, accounts }: StatCardsProps) {
         <CardContent className="p-6">
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-600">Est. Monthly Income</p>
-            {signals ? (
-              <>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {formatCurrency(monthlyIncome)}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-700">
-                    {signals.incomeSignals.paymentFrequency || 'variable'}
-                  </Badge>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-3xl font-semibold text-gray-400">--</p>
-                <p className="text-xs text-gray-500">Click "Generate Insights" to analyze</p>
-              </>
-            )}
+            <p className="text-3xl font-semibold text-gray-900">
+              {formatCurrency(monthlyIncome)}
+            </p>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-700">
+                {incomeTransactions.length > 0 ? 'monthly' : 'no data'}
+              </Badge>
+            </div>
           </div>
         </CardContent>
       </Card>
