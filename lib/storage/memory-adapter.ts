@@ -283,6 +283,21 @@ export class MemoryStorageAdapter implements StorageAdapter {
     const usersWithConsent = Array.from(this.consents.values()).filter(c => c.active).length;
     const usersWithPersona = Array.from(this.personas.keys()).length;
     
+    // Calculate persona breakdown
+    const personaBreakdown: Record<string, number> = {
+      HIGH_UTILIZATION: 0,
+      VARIABLE_INCOME_BUDGETER: 0,
+      SUBSCRIPTION_HEAVY: 0,
+      SAVINGS_BUILDER: 0,
+      LOW_INCOME_STABILIZER: 0,
+    };
+    
+    Array.from(this.personas.values()).forEach(persona => {
+      if (persona.type in personaBreakdown) {
+        personaBreakdown[persona.type]++;
+      }
+    });
+    
     const allRecommendations = Array.from(this.recommendations.values());
     const recommendationsByStatus = {
       pending: allRecommendations.filter(r => r.status === 'pending').length,
@@ -300,6 +315,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
       averageRecommendationsPerUser: usersWithPersona > 0 
         ? allRecommendations.length / usersWithPersona 
         : 0,
+      personaBreakdown: personaBreakdown as any,
       recommendationsByStatus,
       averageLatency: 0, // Will be calculated during processing
       errorCount: 0,

@@ -209,6 +209,29 @@ export class PostgresStorageAdapter implements StorageAdapter {
     const personasResult = await sql`SELECT COUNT(DISTINCT user_id) as count FROM personas`;
     const usersWithPersona = parseInt(personasResult.rows[0].count);
     
+    // Get persona breakdown
+    const personaCounts = await sql`
+      SELECT 
+        data->>'type' as persona_type,
+        COUNT(*) as count
+      FROM personas
+      GROUP BY data->>'type'
+    `;
+    
+    const personaBreakdown: Record<string, number> = {
+      HIGH_UTILIZATION: 0,
+      VARIABLE_INCOME_BUDGETER: 0,
+      SUBSCRIPTION_HEAVY: 0,
+      SAVINGS_BUILDER: 0,
+      LOW_INCOME_STABILIZER: 0,
+    };
+    
+    personaCounts.rows.forEach(row => {
+      if (row.persona_type in personaBreakdown) {
+        personaBreakdown[row.persona_type] = parseInt(row.count);
+      }
+    });
+    
     const recsResult = await sql`SELECT COUNT(*) as count FROM recommendations`;
     const totalRecommendations = parseInt(recsResult.rows[0].count);
 
@@ -238,6 +261,7 @@ export class PostgresStorageAdapter implements StorageAdapter {
       coveragePercentage: totalUsers > 0 ? (usersWithPersona / totalUsers) * 100 : 0,
       totalRecommendations,
       averageRecommendationsPerUser: usersWithPersona > 0 ? totalRecommendations / usersWithPersona : 0,
+      personaBreakdown: personaBreakdown as any,
       recommendationsByStatus,
       averageLatency: 0,
       errorCount: 0,

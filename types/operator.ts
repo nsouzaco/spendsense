@@ -38,6 +38,13 @@ export interface SystemMetrics {
   coveragePercentage: number;
   totalRecommendations: number;
   averageRecommendationsPerUser: number;
+  personaBreakdown?: {
+    HIGH_UTILIZATION?: number;
+    VARIABLE_INCOME_BUDGETER?: number;
+    SUBSCRIPTION_HEAVY?: number;
+    SAVINGS_BUILDER?: number;
+    LOW_INCOME_STABILIZER?: number;
+  };
   recommendationsByStatus: {
     pending: number;
     approved: number;

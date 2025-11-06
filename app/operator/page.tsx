@@ -94,34 +94,151 @@ export default function OperatorDashboard() {
               <p className="text-sm font-light tracking-tight text-white/60">Monitor user engagement and system performance metrics</p>
             </div>
             
-            <div className="grid md:grid-cols-4 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
                 <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">Total Users</h3>
                 <p className="text-4xl font-extralight tracking-tight text-white">{metrics.totalUsers}</p>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-                <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">With Consent</h3>
-                <p className="text-4xl font-extralight tracking-tight text-white">{metrics.usersWithConsent}</p>
                 <p className="text-xs font-light tracking-tight text-white/50 mt-2">
-                  {Math.round((metrics.usersWithConsent / metrics.totalUsers) * 100)}% of total
+                  Registered on platform
                 </p>
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-                <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">With Personas</h3>
-                <p className="text-4xl font-extralight tracking-tight text-white">{metrics.usersWithPersona}</p>
-                <p className="text-xs font-light tracking-tight text-white/50 mt-2">
-                  {metrics.coveragePercentage.toFixed(1)}% coverage
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-                <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">Recommendations</h3>
+                <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">AI Recommendations</h3>
                 <p className="text-4xl font-extralight tracking-tight text-white">{metrics.totalRecommendations}</p>
                 <p className="text-xs font-light tracking-tight text-white/50 mt-2">
-                  {metrics.averageRecommendationsPerUser.toFixed(1)} per user avg
+                  {metrics.averageRecommendationsPerUser.toFixed(1)} per user average
                 </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+                <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">Analyzed Users</h3>
+                <p className="text-4xl font-extralight tracking-tight text-white">{metrics.usersWithPersona}</p>
+                <p className="text-xs font-light tracking-tight text-white/50 mt-2">
+                  {metrics.coveragePercentage.toFixed(1)}% of total users
+                </p>
+              </div>
+            </div>
+
+            {/* User Financial Categories */}
+            <div className="mt-8">
+              <h3 className="text-2xl font-extralight tracking-tight text-white mb-4">User Financial Categories</h3>
+              <p className="text-sm font-light tracking-tight text-white/60 mb-4">Distribution of users by financial health profile</p>
+              
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* High Utilization */}
+                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 backdrop-blur-xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/20">
+                      <span className="text-xl">💳</span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-light tracking-tight text-white">High Credit Usage</h4>
+                      <p className="text-xs font-light tracking-tight text-white/50">Credit card utilization</p>
+                    </div>
+                  </div>
+                  <p className="text-3xl font-extralight tracking-tight text-white">
+                    {metrics.personaBreakdown?.HIGH_UTILIZATION || 0}
+                  </p>
+                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.HIGH_UTILIZATION || 0) / metrics.totalUsers) * 100) : 0}% of users
+                  </p>
+                </div>
+
+                {/* Savings Builder */}
+                <div className="rounded-2xl border border-green-500/30 bg-green-500/10 p-6 backdrop-blur-xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/20">
+                      <span className="text-xl">💰</span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-light tracking-tight text-white">Active Savers</h4>
+                      <p className="text-xs font-light tracking-tight text-white/50">Building savings</p>
+                    </div>
+                  </div>
+                  <p className="text-3xl font-extralight tracking-tight text-white">
+                    {metrics.personaBreakdown?.SAVINGS_BUILDER || 0}
+                  </p>
+                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.SAVINGS_BUILDER || 0) / metrics.totalUsers) * 100) : 0}% of users
+                  </p>
+                </div>
+
+                {/* Variable Income */}
+                <div className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-6 backdrop-blur-xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500/20">
+                      <span className="text-xl">📊</span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-light tracking-tight text-white">Variable Income</h4>
+                      <p className="text-xs font-light tracking-tight text-white/50">Irregular earnings</p>
+                    </div>
+                  </div>
+                  <p className="text-3xl font-extralight tracking-tight text-white">
+                    {metrics.personaBreakdown?.VARIABLE_INCOME_BUDGETER || 0}
+                  </p>
+                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.VARIABLE_INCOME_BUDGETER || 0) / metrics.totalUsers) * 100) : 0}% of users
+                  </p>
+                </div>
+
+                {/* Subscription Heavy */}
+                <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-6 backdrop-blur-xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20">
+                      <span className="text-xl">📱</span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-light tracking-tight text-white">High Subscriptions</h4>
+                      <p className="text-xs font-light tracking-tight text-white/50">Many recurring bills</p>
+                    </div>
+                  </div>
+                  <p className="text-3xl font-extralight tracking-tight text-white">
+                    {metrics.personaBreakdown?.SUBSCRIPTION_HEAVY || 0}
+                  </p>
+                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.SUBSCRIPTION_HEAVY || 0) / metrics.totalUsers) * 100) : 0}% of users
+                  </p>
+                </div>
+
+                {/* Low Income */}
+                <div className="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-6 backdrop-blur-xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20">
+                      <span className="text-xl">🎯</span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-light tracking-tight text-white">Limited Income</h4>
+                      <p className="text-xs font-light tracking-tight text-white/50">Need micro-budgeting</p>
+                    </div>
+                  </div>
+                  <p className="text-3xl font-extralight tracking-tight text-white">
+                    {metrics.personaBreakdown?.LOW_INCOME_STABILIZER || 0}
+                  </p>
+                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.LOW_INCOME_STABILIZER || 0) / metrics.totalUsers) * 100) : 0}% of users
+                  </p>
+                </div>
+
+                {/* Unanalyzed */}
+                <div className="rounded-2xl border border-gray-500/30 bg-gray-500/10 p-6 backdrop-blur-xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-500/20">
+                      <span className="text-xl">⏳</span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-light tracking-tight text-white">Not Yet Analyzed</h4>
+                      <p className="text-xs font-light tracking-tight text-white/50">Pending classification</p>
+                    </div>
+                  </div>
+                  <p className="text-3xl font-extralight tracking-tight text-white">
+                    {metrics.totalUsers - metrics.usersWithPersona}
+                  </p>
+                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                    {metrics.totalUsers > 0 ? Math.round(((metrics.totalUsers - metrics.usersWithPersona) / metrics.totalUsers) * 100) : 0}% of users
+                  </p>
+                </div>
               </div>
             </div>
           </>
