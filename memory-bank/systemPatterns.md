@@ -100,6 +100,26 @@ Assigned Persona + Signals → Recommendation Engine → Guardrails → Storage
 - Guardrails validate before storage
 - Decision trace logged for auditability
 
+### 4. User Summary Generation (On-Demand)
+
+```
+User Data (accounts, transactions, signals, personas, recommendations)
+                        │
+                        ▼
+                Generate AI Summary
+                        │
+                        ▼
+                 Display to User
+```
+
+**Pattern**: Simple AI-only endpoint
+- `/api/users/[userId]/summary` endpoint generates personalized text
+- Uses OpenAI to create 3-4 paragraph financial snapshot
+- Triggered by "✨ Generate My Summary" button
+- No data processing - only reads existing data and creates narrative
+- Warm, supportive tone that acknowledges strengths and opportunities
+- Can be regenerated/refreshed anytime
+
 ## Key Design Patterns
 
 ### Storage Abstraction Pattern

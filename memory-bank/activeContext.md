@@ -13,9 +13,10 @@
 5. ✅ **UX Fixes**: Disabled password manager, fixed modal blocking issues
 6. ✅ **Vercel Deployment**: Live at https://spendsense-rjrnbwyky-natalyscst-gmailcoms-projects.vercel.app
 7. ✅ **PostgreSQL Seeding**: 75 users, 150 accounts, 8,218 transactions on production database
+8. ✅ **Simplified AI Summary**: Button now only generates personalized text summaries (Nov 6, 2025)
 
 ## Current Focus
-Application is fully deployed and operational. Ready for user testing and feedback.
+Application is fully deployed and operational. "Generate My Summary" button simplified to only create AI text content.
 
 ## Project Status
 

@@ -27,6 +27,7 @@ export default function UserDashboard() {
   const [primaryPersona, setPrimaryPersona] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'dashboard' | 'accounts' | 'transactions' | 'analytics' | 'cards' | 'education'>('dashboard');
 
   useEffect(() => {
@@ -79,10 +80,10 @@ export default function UserDashboard() {
     }
   };
 
-  const handleProcessData = async () => {
+  const handleGenerateSummary = async () => {
     setProcessing(true);
     try {
-      const res = await fetch('/api/process', { 
+      const res = await fetch(`/api/users/${userId}/summary`, { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,16 +96,15 @@ export default function UserDashboard() {
       
       const data = await res.json();
       
-      if (data.success) {
-        await loadUserData();
-        // Show success without alert
-        console.log(`Processing complete! ${data.data.processed} users processed.`);
+      if (data.success && data.data.summary) {
+        setSummary(data.data.summary);
+        console.log('Summary generated successfully!');
       } else {
-        throw new Error(data.error?.message || 'Processing failed');
+        throw new Error(data.error?.message || 'Summary generation failed');
       }
     } catch (error) {
-      console.error('Error processing data:', error);
-      // Don't show alert, just log the error
+      console.error('Error generating summary:', error);
+      setSummary('Unable to generate summary at this time. Please try again later.');
     } finally {
       setProcessing(false);
     }
@@ -384,8 +384,8 @@ export default function UserDashboard() {
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-gray-900">AI-Powered Insights</h2>
-                {recommendations.length === 0 ? (
+                <h2 className="text-xl font-semibold text-gray-900">Your Personalized Financial Summary</h2>
+                {!summary ? (
                   <div className="rounded-xl border border-gray-200 bg-white p-12 text-center space-y-6">
                     <div className="mx-auto w-16 h-16 rounded-full border-2 border-gray-200 flex items-center justify-center">
                       <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -393,11 +393,11 @@ export default function UserDashboard() {
                       </svg>
                     </div>
                     <div className="space-y-2">
-                      <h3 className="text-2xl font-semibold text-gray-900">Get Personalized Insights</h3>
+                      <h3 className="text-2xl font-semibold text-gray-900">Get Your AI Financial Summary</h3>
                       <p className="text-sm text-gray-600 max-w-md mx-auto">
                         {processing 
-                          ? 'Analyzing your financial data with AI... This may take a few minutes.' 
-                          : 'Click below to analyze your spending patterns and get AI-powered recommendations.'
+                          ? 'Generating your personalized financial summary...' 
+                          : 'Click below to get a personalized summary of your financial health and recommendations.'
                         }
                       </p>
                     </div>
@@ -409,28 +409,55 @@ export default function UserDashboard() {
                       </div>
                     )}
                     <Button 
-                      onClick={handleProcessData} 
+                      onClick={handleGenerateSummary} 
                       disabled={processing}
                       size="lg"
                       className="bg-purple-600 hover:bg-purple-700 text-white"
                     >
-                      {processing ? 'Processing... Please wait' : '💡 Generate Insights'}
+                      {processing ? 'Generating... Please wait' : '✨ Generate My Summary'}
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {recommendations.slice(0, 2).map((rec) => (
-                      <div key={rec.id} className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{rec.title}</h3>
-                          <p className="text-sm text-gray-600">{rec.description}</p>
+                    <div className="rounded-xl border border-gray-200 bg-white p-8 space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                            <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Your Financial Snapshot</h3>
+                            <p className="text-xs text-gray-500">Powered by AI</p>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={handleGenerateSummary} 
+                          disabled={processing}
+                          size="sm"
+                          variant="outline"
+                          className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                        >
+                          {processing ? 'Refreshing...' : '🔄 Refresh'}
+                        </Button>
+                      </div>
+                      <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
+                        {summary}
+                      </div>
+                    </div>
+                    {recommendations.length > 0 && (
+                      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-3">
+                        <h3 className="text-base font-semibold text-gray-900">Quick Recommendations</h3>
+                        <div className="space-y-2">
+                          {recommendations.slice(0, 3).map((rec) => (
+                            <div key={rec.id} className="flex items-start gap-2 text-sm">
+                              <span className="text-purple-600 mt-0.5">→</span>
+                              <span className="text-gray-700">{rec.title}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
-                    {recommendations.length > 2 && (
-                      <p className="text-sm text-gray-600 text-center">
-                        And {recommendations.length - 2} more insights...
-                      </p>
                     )}
                   </div>
                 )}
