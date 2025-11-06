@@ -108,13 +108,9 @@ export default function OperatorDashboard() {
   }
 
   return (
-    <div className="relative min-h-screen w-screen overflow-hidden bg-black">
-      {/* Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-black to-black" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-600/20 via-transparent to-transparent" />
-      
-      {/* Header */}
-      <header className="relative border-b border-white/10 bg-black/20 backdrop-blur-xl">
+    <div className="relative min-h-screen w-screen overflow-x-hidden bg-gray-50">
+      {/* Header - Keep Dark */}
+      <header className="relative border-b border-white/10 bg-gradient-to-br from-purple-900/30 via-black to-black backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-sans font-semibold tracking-tight text-white">SpendSense</h1>
@@ -131,131 +127,131 @@ export default function OperatorDashboard() {
         </div>
       </header>
 
-      <div className="relative container mx-auto px-4 py-8 space-y-6">
+      <div className="container mx-auto px-4 py-8 space-y-6">
         {/* Metrics Overview */}
         {metrics && (
           <>
             <div className="flex justify-between items-center">
             <div>
-                <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">Platform Overview</h2>
-                <p className="text-sm font-light tracking-tight text-white/60">Monitor user engagement and system performance metrics</p>
+                <h2 className="text-3xl font-extralight tracking-tight text-gray-900 mb-2">Platform Overview</h2>
+                <p className="text-sm font-light tracking-tight text-gray-600">Monitor user engagement and system performance metrics</p>
               </div>
               {metrics && metrics.totalUsers > metrics.usersWithPersona && (
                 <button
                   onClick={handleAnalyzeAll}
                   disabled={analyzing}
-                  className="rounded-xl border border-purple-500/30 bg-purple-500/20 px-4 py-2 text-sm font-light tracking-tight text-purple-200 backdrop-blur-sm transition-colors hover:bg-purple-500/30 disabled:opacity-50"
+                  className="rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm font-light tracking-tight text-purple-700 transition-colors hover:bg-purple-500/20 disabled:opacity-50"
                 >
                   {analyzing ? 'Analyzing...' : `🔍 Analyze ${metrics.totalUsers - metrics.usersWithPersona} Users`}
                 </button>
               )}
             </div>
             
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl max-w-sm">
-              <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">Total Users</h3>
-              <p className="text-4xl font-extralight tracking-tight text-white">{metrics.totalUsers}</p>
-              <p className="text-xs font-light tracking-tight text-white/50 mt-2">
+            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-6 max-w-sm">
+              <h3 className="text-sm font-light tracking-tight text-gray-600 mb-2">Total Users</h3>
+              <p className="text-4xl font-extralight tracking-tight text-gray-900">{metrics.totalUsers}</p>
+              <p className="text-xs font-light tracking-tight text-gray-500 mt-2">
                 Registered on platform
               </p>
             </div>
 
             {/* User Financial Categories */}
             <div className="mt-8">
-              <h3 className="text-2xl font-extralight tracking-tight text-white mb-4">User Financial Categories</h3>
-              <p className="text-sm font-light tracking-tight text-white/60 mb-4">Distribution of users by financial health profile</p>
+              <h3 className="text-2xl font-extralight tracking-tight text-gray-900 mb-4">User Financial Categories</h3>
+              <p className="text-sm font-light tracking-tight text-gray-600 mb-4">Distribution of users by financial health profile</p>
               
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {/* High Utilization */}
-                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 backdrop-blur-xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500/20">
-                      <span className="text-xl">💳</span>
+                <div className="rounded-xl border border-red-200 bg-red-50 shadow-sm p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100">
+                      <span className="text-lg">💳</span>
                     </div>
                     <div>
-                      <h4 className="text-lg font-light tracking-tight text-white">High Credit Usage</h4>
-                      <p className="text-xs font-light tracking-tight text-white/50">Credit card utilization</p>
+                      <h4 className="text-sm font-light tracking-tight text-gray-900">High Credit Usage</h4>
+                      <p className="text-xs font-light tracking-tight text-gray-600">Credit card utilization</p>
                     </div>
                   </div>
-                  <p className="text-3xl font-extralight tracking-tight text-white">
+                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
                     {metrics.personaBreakdown?.HIGH_UTILIZATION || 0}
                   </p>
-                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
                     {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.HIGH_UTILIZATION || 0) / metrics.totalUsers) * 100) : 0}% of users
                   </p>
                 </div>
 
                 {/* Savings Builder */}
-                <div className="rounded-2xl border border-green-500/30 bg-green-500/10 p-6 backdrop-blur-xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/20">
-                      <span className="text-xl">💰</span>
+                <div className="rounded-xl border border-green-200 bg-green-50 shadow-sm p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
+                      <span className="text-lg">💰</span>
                     </div>
                     <div>
-                      <h4 className="text-lg font-light tracking-tight text-white">Active Savers</h4>
-                      <p className="text-xs font-light tracking-tight text-white/50">Building savings</p>
+                      <h4 className="text-sm font-light tracking-tight text-gray-900">Active Savers</h4>
+                      <p className="text-xs font-light tracking-tight text-gray-600">Building savings</p>
                     </div>
                   </div>
-                  <p className="text-3xl font-extralight tracking-tight text-white">
+                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
                     {metrics.personaBreakdown?.SAVINGS_BUILDER || 0}
                   </p>
-                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
                     {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.SAVINGS_BUILDER || 0) / metrics.totalUsers) * 100) : 0}% of users
                   </p>
                 </div>
 
                 {/* Variable Income */}
-                <div className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-6 backdrop-blur-xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500/20">
-                      <span className="text-xl">📊</span>
+                <div className="rounded-xl border border-yellow-200 bg-yellow-50 shadow-sm p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100">
+                      <span className="text-lg">📊</span>
                     </div>
                     <div>
-                      <h4 className="text-lg font-light tracking-tight text-white">Variable Income</h4>
-                      <p className="text-xs font-light tracking-tight text-white/50">Irregular earnings</p>
+                      <h4 className="text-sm font-light tracking-tight text-gray-900">Variable Income</h4>
+                      <p className="text-xs font-light tracking-tight text-gray-600">Irregular earnings</p>
                     </div>
                   </div>
-                  <p className="text-3xl font-extralight tracking-tight text-white">
+                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
                     {metrics.personaBreakdown?.VARIABLE_INCOME_BUDGETER || 0}
                   </p>
-                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
                     {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.VARIABLE_INCOME_BUDGETER || 0) / metrics.totalUsers) * 100) : 0}% of users
                   </p>
                 </div>
 
                 {/* Subscription Heavy */}
-                <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-6 backdrop-blur-xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20">
-                      <span className="text-xl">📱</span>
+                <div className="rounded-xl border border-purple-200 bg-purple-50 shadow-sm p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
+                      <span className="text-lg">📱</span>
                     </div>
                     <div>
-                      <h4 className="text-lg font-light tracking-tight text-white">High Subscriptions</h4>
-                      <p className="text-xs font-light tracking-tight text-white/50">Many recurring bills</p>
+                      <h4 className="text-sm font-light tracking-tight text-gray-900">High Subscriptions</h4>
+                      <p className="text-xs font-light tracking-tight text-gray-600">Many recurring bills</p>
                     </div>
                   </div>
-                  <p className="text-3xl font-extralight tracking-tight text-white">
+                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
                     {metrics.personaBreakdown?.SUBSCRIPTION_HEAVY || 0}
                   </p>
-                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
                     {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.SUBSCRIPTION_HEAVY || 0) / metrics.totalUsers) * 100) : 0}% of users
                   </p>
                 </div>
 
                 {/* Low Income */}
-                <div className="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-6 backdrop-blur-xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20">
-                      <span className="text-xl">🎯</span>
+                <div className="rounded-xl border border-blue-200 bg-blue-50 shadow-sm p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                      <span className="text-lg">🎯</span>
                     </div>
                     <div>
-                      <h4 className="text-lg font-light tracking-tight text-white">Limited Income</h4>
-                      <p className="text-xs font-light tracking-tight text-white/50">Need micro-budgeting</p>
+                      <h4 className="text-sm font-light tracking-tight text-gray-900">Limited Income</h4>
+                      <p className="text-xs font-light tracking-tight text-gray-600">Need micro-budgeting</p>
                     </div>
                   </div>
-                  <p className="text-3xl font-extralight tracking-tight text-white">
+                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
                     {metrics.personaBreakdown?.LOW_INCOME_STABILIZER || 0}
                   </p>
-                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
+                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
                     {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.LOW_INCOME_STABILIZER || 0) / metrics.totalUsers) * 100) : 0}% of users
                   </p>
                 </div>
@@ -265,55 +261,55 @@ export default function OperatorDashboard() {
         )}
 
         {/* User List */}
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
-              <h2 className="text-2xl font-extralight tracking-tight text-white">Users</h2>
-              <p className="text-sm font-light tracking-tight text-white/60 mt-1">{filteredUsers.length} total users</p>
+              <h2 className="text-2xl font-extralight tracking-tight text-gray-900">Users</h2>
+              <p className="text-sm font-light tracking-tight text-gray-600 mt-1">{filteredUsers.length} total users</p>
             </div>
             <input
               type="text"
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-64 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-light tracking-tight text-white placeholder:text-white/40 backdrop-blur-sm focus:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/10"
+              className="w-full sm:w-64 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-light tracking-tight text-gray-900 placeholder:text-gray-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
             />
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">User ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Email</th>
-                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Consent</th>
-                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">User Category</th>
-                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-white/70">Profile</th>
+                <tr className="border-b border-gray-200">
+                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-gray-700">User ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-gray-700">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-gray-700">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-gray-700">Consent</th>
+                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-gray-700">User Category</th>
+                  <th className="px-4 py-3 text-left text-xs font-light tracking-tight text-gray-700">Profile</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                    <td className="px-4 py-3 text-xs font-mono tracking-tight text-white/80">{user.id}</td>
-                    <td className="px-4 py-3 text-sm font-light tracking-tight text-white">{user.firstName} {user.lastName}</td>
-                    <td className="px-4 py-3 text-sm font-light tracking-tight text-white/70">{user.email}</td>
+                  <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-xs font-mono tracking-tight text-gray-600">{user.id}</td>
+                    <td className="px-4 py-3 text-sm font-light tracking-tight text-gray-900">{user.firstName} {user.lastName}</td>
+                    <td className="px-4 py-3 text-sm font-light tracking-tight text-gray-600">{user.email}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex rounded-full px-2 py-1 text-xs font-light tracking-tight ${
                         user.consentStatus.active 
-                          ? 'bg-green-500/20 text-green-200 border border-green-500/30' 
-                          : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
+                          ? 'bg-green-100 text-green-700 border border-green-200' 
+                          : 'bg-gray-100 text-gray-600 border border-gray-200'
                       }`}>
                         {user.consentStatus.active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       {user.primaryPersona ? (
-                        <span className="inline-flex rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-1 text-xs font-light tracking-tight text-purple-200">
+                        <span className="inline-flex rounded-full border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-light tracking-tight text-purple-700">
                           {user.primaryPersona}
                         </span>
                       ) : (
-                        <span className="text-sm font-light tracking-tight text-white/40">None</span>
+                        <span className="text-sm font-light tracking-tight text-gray-400">None</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -322,7 +318,7 @@ export default function OperatorDashboard() {
                           setSelectedUser(user);
                           setShowUserModal(true);
                         }}
-                        className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-light tracking-tight text-white/80 backdrop-blur-sm transition-colors hover:bg-white/10"
+                        className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-light tracking-tight text-gray-700 transition-colors hover:bg-gray-50"
                       >
                         View Profile
                       </button>
