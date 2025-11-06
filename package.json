@@ -15,7 +15,8 @@
     "generate-metrics": "tsx scripts/generate-metrics.ts",
     "db:migrate": "tsx scripts/migrate-postgres.ts",
     "db:seed": "tsx scripts/seed-postgres.ts",
-    "db:setup": "npm run db:migrate && npm run db:seed"
+    "db:seed-full": "tsx scripts/seed-with-analysis.ts",
+    "db:setup": "npm run db:migrate && npm run db:seed-full"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
