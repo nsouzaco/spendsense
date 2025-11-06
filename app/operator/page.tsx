@@ -134,7 +134,7 @@ export default function OperatorDashboard() {
         {metrics && (
           <>
             <div className="flex justify-between items-center">
-              <div>
+            <div>
                 <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">Platform Overview</h2>
                 <p className="text-sm font-light tracking-tight text-white/60">Monitor user engagement and system performance metrics</p>
               </div>
@@ -265,25 +265,6 @@ export default function OperatorDashboard() {
                   </p>
                   <p className="text-xs font-light tracking-tight text-white/60 mt-2">
                     {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.LOW_INCOME_STABILIZER || 0) / metrics.totalUsers) * 100) : 0}% of users
-                  </p>
-                </div>
-
-                {/* Unanalyzed */}
-                <div className="rounded-2xl border border-gray-500/30 bg-gray-500/10 p-6 backdrop-blur-xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-500/20">
-                      <span className="text-xl">⏳</span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-light tracking-tight text-white">Not Yet Analyzed</h4>
-                      <p className="text-xs font-light tracking-tight text-white/50">Pending classification</p>
-                    </div>
-                  </div>
-                  <p className="text-3xl font-extralight tracking-tight text-white">
-                    {metrics.totalUsers - metrics.usersWithPersona}
-                  </p>
-                  <p className="text-xs font-light tracking-tight text-white/60 mt-2">
-                    {metrics.totalUsers > 0 ? Math.round(((metrics.totalUsers - metrics.usersWithPersona) / metrics.totalUsers) * 100) : 0}% of users
                   </p>
                 </div>
               </div>
