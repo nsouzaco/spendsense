@@ -38,11 +38,13 @@
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                      Storage Abstraction                     │
+│                    (Fully Async Interface)                   │
 │                                                               │
-│    ┌──────────────────┐           ┌──────────────────┐     │
-│    │  SQLite Adapter  │           │  Memory Adapter  │     │
-│    │  (Local)         │           │  (Vercel)        │     │
-│    └──────────────────┘           └──────────────────┘     │
+│    ┌──────────────────┐         ┌────────────────────┐     │
+│    │  Memory Adapter  │         │  Postgres Adapter  │     │
+│    │  (Development)   │         │  (Production)      │     │
+│    │  Promise-based   │         │  @vercel/postgres  │     │
+│    └──────────────────┘         └────────────────────┘     │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -104,24 +106,42 @@ Assigned Persona + Signals → Recommendation Engine → Guardrails → Storage
 
 ```typescript
 interface StorageAdapter {
-  getUser(userId: string): User | null;
-  getUserSignals(userId: string): Signals;
-  saveRecommendation(rec: Recommendation): void;
-  // ... other methods
+  getUser(userId: string): Promise<User | null>;
+  getUserSignals(userId: string): Promise<Signals | null>;
+  saveRecommendation(rec: Recommendation): Promise<void>;
+  saveUser(user: User): Promise<void>;
+  getAllUsers(): Promise<User[]>;
+  // ... all methods return Promise<T>
 }
 
-class SQLiteAdapter implements StorageAdapter { }
-class MemoryAdapter implements StorageAdapter { }
+class MemoryStorageAdapter implements StorageAdapter {
+  // In-memory JSON store (fast, zero-config)
+  async getUser(userId: string): Promise<User | null> { }
+  async saveUser(user: User): Promise<void> { }
+  // ... fully async
+}
+
+class PostgresStorageAdapter implements StorageAdapter {
+  // PostgreSQL via @vercel/postgres
+  async getUser(userId: string): Promise<User | null> { }
+  async saveUser(user: User): Promise<void> { }
+  // ... fully async with SQL queries
+}
 
 // Factory pattern for instantiation
 function getStorageAdapter(): StorageAdapter {
-  return process.env.DEPLOYMENT_TARGET === 'vercel'
-    ? new MemoryAdapter()
-    : new SQLiteAdapter();
+  const mode = process.env.STORAGE_MODE || 'memory';
+  return mode === 'postgres'
+    ? new PostgresStorageAdapter()
+    : new MemoryStorageAdapter();
 }
 ```
 
-**Why**: Enables dual deployment targets with zero business logic changes
+**Why**: 
+- Enables dual deployment targets with zero business logic changes
+- Async interface prepares for scalability (database connections, network I/O)
+- Easy to add new storage backends (MongoDB, DynamoDB, etc.)
+- All API routes use `await` consistently
 
 ### Signal Calculator Pattern
 
@@ -263,7 +283,7 @@ OperatorDashboard
 ```typescript
 function requireAuth(handler: ApiHandler, role?: 'user' | 'operator') {
   return async (req, res) => {
-    const session = getSession(req);
+    const session = await getSession(req); // Now async
     if (!session || (role && session.role !== role)) {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
@@ -280,7 +300,8 @@ export default requireAuth(userDashboardHandler, 'user');
 function requireConsent(handler: ApiHandler) {
   return async (req, res) => {
     const userId = req.query.userId;
-    const consent = await getConsent(userId);
+    const storage = getStorageAdapter();
+    const consent = await storage.getConsent(userId); // Async
     if (!consent?.active) {
       return res.status(403).json({ 
         success: false, 
@@ -289,6 +310,31 @@ function requireConsent(handler: ApiHandler) {
     }
     return handler(req, res);
   };
+}
+```
+
+### Async API Route Pattern
+```typescript
+export async function GET(request: Request) {
+  try {
+    const storage = getStorageAdapter();
+    const userId = request.nextUrl.searchParams.get('userId');
+    
+    // All storage operations use await
+    const user = await storage.getUser(userId);
+    const signals = await storage.getUserSignals(userId);
+    const recommendations = await storage.getRecommendations(userId);
+    
+    return Response.json({
+      success: true,
+      data: { user, signals, recommendations }
+    });
+  } catch (error) {
+    return Response.json({
+      success: false,
+      error: error.message
+    }, { status: 500 });
+  }
 }
 ```
 
@@ -400,23 +446,32 @@ const user = new UserBuilder()
 - Built-in API routes
 - Excellent Vercel integration
 
-### Why SQLite for local?
-- Zero-config database
-- Perfect for local development
-- Good performance for < 1000 users
-- No external dependencies
+### Why In-Memory for Local Development?
+- Zero-config setup
+- Fast iteration and testing
+- No database installation required
+- Perfect for rapid prototyping
 
-### Why In-Memory for Vercel?
-- Avoids serverless filesystem issues
-- Simpler than external database setup
-- Acceptable for MVP demo
-- Fast reads, no network latency
+### Why PostgreSQL for Production?
+- Persistent data across deployments
+- ACID guarantees for data integrity
+- Vercel-optimized with connection pooling
+- Production-ready and scalable
+- Familiar SQL interface
+
+### Why Async Storage Interface?
+- Prepares for network I/O and database operations
+- Enables connection pooling and efficient resource usage
+- Consistent pattern across all API routes
+- Future-proof for distributed systems
+- Proper error handling with try/catch
 
 ### Why Dual Storage Abstraction?
-- Best of both worlds (local dev + easy deploy)
-- Forces clean architecture (business logic decoupled)
-- Easy to swap for real database later
-- Demonstrates architectural thinking
+- Best of both worlds (fast local dev + production database)
+- Forces clean architecture (business logic decoupled from storage)
+- Easy to swap backends via environment variable
+- Demonstrates production-ready architectural thinking
+- Zero code changes needed between environments
 
 ### Why OpenAI for Content Generation?
 - High-quality natural language

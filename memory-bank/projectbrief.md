@@ -20,9 +20,10 @@ A full-stack Next.js application that:
 6. Maintains strong guardrails around consent, eligibility, and tone
 
 ## Timeline & Scope
-- **Duration**: 2-day MVP sprint
+- **Duration**: 2-day MVP sprint (completed)
 - **Team**: Solo developer using Cursor + AI tools
-- **Deployment**: Dual-target (local SQLite + Vercel in-memory)
+- **Deployment**: Production (Vercel + PostgreSQL)
+- **Status**: ✅ Live and operational
 
 ## Success Criteria
 - 100% coverage: All users assigned persona with ≥3 detected behaviors
@@ -41,10 +42,13 @@ A full-stack Next.js application that:
 ## Technology Stack
 - **Framework**: Next.js 14+ (App Router)
 - **Frontend**: React with shadcn/ui components
-- **Storage**: SQLite (local) / In-memory JSON (Vercel)
-- **API**: Next.js API routes
+- **Storage**: In-memory (local) / PostgreSQL (production)
+- **Database**: @vercel/postgres with async architecture
+- **API**: Next.js API routes (fully async)
 - **AI**: OpenAI API for content generation
 - **Language**: TypeScript
+- **Typography**: Geist Mono + Geist Semibold
+- **Styling**: Tailwind CSS with purple gradient theme
 
 ## Repository
 https://github.com/nsouzaco/spendsense

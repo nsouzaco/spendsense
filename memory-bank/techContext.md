@@ -13,19 +13,29 @@
 - **Lucide Icons**: Icon library for UI elements
 
 ### Storage Strategy
-Dual storage backend for different deployment targets:
+Dual storage backend with environment-based switching:
 
-#### Local Development (SQLite)
-- **better-sqlite3**: Synchronous SQLite for Node.js
-- Persistent database file
-- Full CRUD operations
-- Transaction support
-
-#### Vercel Deployment (In-Memory)
+#### Local Development (In-Memory)
 - JSON-based in-memory store
+- Fast and zero-config for development
 - Seeded from pre-generated JSON file
-- Session-based persistence (resets on redeploy)
-- Avoids serverless filesystem limitations
+- Ideal for rapid iteration and testing
+- Environment: `STORAGE_MODE=memory`
+
+#### Production Deployment (PostgreSQL)
+- **@vercel/postgres**: Vercel-optimized PostgreSQL client
+- Fully async Promise-based operations
+- Persistent database with ACID guarantees
+- Seeded with 75 users, 150 accounts, 8,218 transactions
+- Environment: `STORAGE_MODE=postgres`
+- Connection via `DATABASE_URL` environment variable
+
+#### Storage Abstraction
+- **StorageAdapter Interface**: All methods return `Promise<T>`
+- Both adapters (Memory & PostgreSQL) implement same async interface
+- All 11 API routes use `await` for storage operations
+- Seamless switching via environment variable
+- Enables easy migration to other databases (e.g., MySQL, MongoDB)
 
 ### AI Integration
 - **OpenAI API**: GPT-4 for generating personalized educational content
@@ -106,11 +116,19 @@ spendsense/
 # OpenAI API
 OPENAI_API_KEY=sk-...
 
-# Deployment Target
-DEPLOYMENT_TARGET=local|vercel
+# Storage Configuration
+STORAGE_MODE=memory|postgres
 
-# Database (local only)
-DATABASE_URL=file:./dev.db
+# Database (postgres mode only)
+DATABASE_URL=postgres://...
+POSTGRES_URL=postgres://...
+POSTGRES_PRISMA_URL=postgres://...
+POSTGRES_URL_NO_SSL=postgres://...
+POSTGRES_URL_NON_POOLING=postgres://...
+POSTGRES_USER=default
+POSTGRES_HOST=...
+POSTGRES_PASSWORD=...
+POSTGRES_DATABASE=verceldb
 ```
 
 ### Installation
@@ -123,13 +141,13 @@ npm test         # Run test suite
 
 ## Technical Constraints
 
-### Serverless Limitations
-- No persistent filesystem on Vercel
+### Serverless Considerations
 - Function execution time limits (10s Hobby, 60s Pro)
-- Cold start latency
+- Cold start latency for database connections
 - Memory limits (1GB Hobby, 3GB Pro)
+- Connection pooling important for PostgreSQL
 
-**Solution**: In-memory storage with pre-seeded data for Vercel deployments
+**Solution**: PostgreSQL with connection pooling via Vercel Postgres, async operations for scalability
 
 ### OpenAI API Rate Limits
 - TPM (Tokens Per Minute) limits vary by tier
@@ -152,7 +170,7 @@ npm test         # Run test suite
   "next": "^14.0.0",
   "react": "^18.2.0",
   "typescript": "^5.0.0",
-  "better-sqlite3": "^9.0.0",
+  "@vercel/postgres": "^0.10.0",
   "openai": "^4.0.0",
   "tailwindcss": "^3.4.0",
   "@radix-ui/react-*": "Latest",
@@ -161,9 +179,15 @@ npm test         # Run test suite
   "tailwind-merge": "^2.0.0",
   "zod": "^3.22.0",
   "jest": "^29.0.0",
-  "@testing-library/react": "^14.0.0"
+  "@testing-library/react": "^14.0.0",
+  "geist": "^1.2.0"
 }
 ```
+
+### Typography
+- **Geist Mono**: Default body font (extralight/light weights)
+- **Geist Semibold**: Logo and emphasis text
+- **Tracking**: `tracking-tight` throughout for modern aesthetic
 
 ## Testing Strategy
 
@@ -221,17 +245,28 @@ npm run dev
 ### Vercel Deployment
 ```bash
 vercel deploy
-# Uses in-memory storage
-# Seeded from data/synthetic-users.json
+# Uses PostgreSQL (STORAGE_MODE=postgres)
+# Requires DATABASE_URL environment variable
 # Automatic HTTPS and CDN
+# Run seed-postgres script after first deploy
+```
+
+### Database Seeding
+```bash
+# Seed PostgreSQL database
+npm run seed-postgres
+
+# Migrate schema (if needed)
+npm run migrate-postgres
 ```
 
 ## Known Limitations & Trade-offs
 
 ### Storage Approach
-- **Trade-off**: In-memory storage on Vercel vs. external database
-- **Decision**: Accept session-only persistence for MVP simplicity
-- **Future**: Migrate to Vercel Postgres or external database for production
+- **Decision**: PostgreSQL for production with async architecture
+- **Benefit**: Persistent data, ACID guarantees, production-ready
+- **Trade-off**: Slightly more complex setup than in-memory
+- **Result**: Scalable, reliable storage with environment-based switching
 
 ### Data Volume
 - **Limitation**: 50-100 synthetic users only
