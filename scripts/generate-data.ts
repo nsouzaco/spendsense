@@ -4,7 +4,7 @@ import { generateSyntheticData } from '../lib/data/generator';
 
 console.log('🎲 Generating synthetic data...\n');
 
-const dataset = generateSyntheticData(75, 42); // 75 users, seed 42
+const dataset = generateSyntheticData(150, 42); // 150 users, seed 42
 
 console.log('✅ Generated:');
 console.log(`   - ${dataset.metadata.userCount} users`);

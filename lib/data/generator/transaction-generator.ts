@@ -84,12 +84,20 @@ const INCOME_TEMPLATE = {
   amountRange: [1500, 8000],
 };
 
+export type FinancialProfile = 
+  | 'savings_builder'
+  | 'variable_income'
+  | 'low_income'
+  | 'high_credit'
+  | 'subscription_heavy';
+
 export function generateTransactions(
   userId: string,
   accounts: Account[],
   transactionIndexStart: number,
   random: SeededRandom,
-  incomeLevel: 'low' | 'medium' | 'high'
+  incomeLevel: 'low' | 'medium' | 'high',
+  financialProfile?: FinancialProfile
 ): Transaction[] {
   const transactions: Transaction[] = [];
   let transactionIndex = transactionIndexStart;
@@ -102,19 +110,35 @@ export function generateTransactions(
   // Generate income (payroll) - varies by income level
   const incomeFrequency = random.choice(['biweekly', 'monthly'] as const);
   const incomeAmount = incomeLevel === 'low'
-    ? random.nextFloat(1500, 2500)
+    ? random.nextFloat(1200, 2000) // Lower for low_income profile
     : incomeLevel === 'medium'
-    ? random.nextFloat(2500, 5000)
-    : random.nextFloat(5000, 8000);
+    ? random.nextFloat(2500, 4500)
+    : random.nextFloat(5000, 7500);
 
   // Generate income transactions over 180 days
   let currentDate = daysAgo(180);
+  let incomeTransactionCount = 0;
+  
   while (new Date(currentDate) < new Date()) {
+    // Skip some income for variable_income profile (create gaps)
+    if (financialProfile === 'variable_income' && incomeTransactionCount > 2 && random.boolean(0.25)) {
+      currentDate = addDays(currentDate, incomeFrequency === 'biweekly' ? 14 : 30);
+      incomeTransactionCount++;
+      continue;
+    }
+    
+    // Variable income amounts
+    let finalIncome = incomeAmount;
+    if (financialProfile === 'variable_income') {
+      const variability = random.nextFloat(-0.35, 0.45); // -35% to +45% variation
+      finalIncome = incomeAmount * (1 + variability);
+    }
+    
     transactions.push({
       id: generateId('txn', transactionIndex++),
       accountId: checkingAccount.id,
       userId,
-      amount: Math.round(incomeAmount * 100) / 100,
+      amount: Math.round(finalIncome * 100) / 100,
       date: currentDate,
       name: random.choice(INCOME_TEMPLATE.merchantNames),
       merchantName: 'Employer',
@@ -127,10 +151,18 @@ export function generateTransactions(
 
     // Next income date
     currentDate = addDays(currentDate, incomeFrequency === 'biweekly' ? 14 : 30);
+    incomeTransactionCount++;
   }
 
-  // Determine subscription count based on random distribution
-  const subscriptionCount = random.nextInt(0, 6); // 0-6 subscriptions
+  // Determine subscription count based on financial profile
+  let subscriptionCount: number;
+  if (financialProfile === 'subscription_heavy') {
+    subscriptionCount = random.nextInt(6, 9); // 6-8 subscriptions
+  } else if (financialProfile === 'savings_builder') {
+    subscriptionCount = random.nextInt(1, 3); // 1-2 subscriptions
+  } else {
+    subscriptionCount = random.nextInt(0, 4); // 0-3 subscriptions
+  }
   const activeSubscriptions = random.sample(
     TRANSACTION_TEMPLATES.filter(t => t.isSubscription),
     Math.min(subscriptionCount, TRANSACTION_TEMPLATES.filter(t => t.isSubscription).length)

@@ -20,6 +20,13 @@ export interface SyntheticDataset {
   };
 }
 
+export type FinancialProfile = 
+  | 'savings_builder'    // Low credit, high savings, regular deposits
+  | 'variable_income'    // Irregular income, income gaps
+  | 'low_income'         // Lower salary
+  | 'high_credit'        // High credit utilization
+  | 'subscription_heavy'; // Many subscriptions
+
 export function generateSyntheticData(
   userCount: number = 75,
   seed: number = 42
@@ -40,20 +47,40 @@ export function generateSyntheticData(
     const user = generateUser(i, random);
     users.push(user);
 
-    // Determine income level for this user
-    // Ensure good distribution: ~20% low, ~50% medium, ~30% high
+    // Determine financial profile - EQUAL distribution across 5 types
+    let financialProfile: FinancialProfile;
     let incomeLevel: 'low' | 'medium' | 'high';
-    const roll = random.next();
-    if (roll < 0.2) {
-      incomeLevel = 'low';
-    } else if (roll < 0.7) {
-      incomeLevel = 'medium';
-    } else {
-      incomeLevel = 'high';
+    
+    const profileIndex = i % 5; // Cycle through 0,1,2,3,4
+    
+    switch(profileIndex) {
+      case 0:
+        financialProfile = 'savings_builder';
+        incomeLevel = 'high';
+        break;
+      case 1:
+        financialProfile = 'variable_income';
+        incomeLevel = 'medium';
+        break;
+      case 2:
+        financialProfile = 'low_income';
+        incomeLevel = 'low';
+        break;
+      case 3:
+        financialProfile = 'high_credit';
+        incomeLevel = 'medium';
+        break;
+      case 4:
+        financialProfile = 'subscription_heavy';
+        incomeLevel = 'medium';
+        break;
+      default:
+        financialProfile = 'savings_builder';
+        incomeLevel = 'medium';
     }
 
     // Generate accounts for this user
-    const userAccounts = generateAccounts(user.id, accountIndex, random);
+    const userAccounts = generateAccounts(user.id, accountIndex, random, financialProfile);
     accounts.push(...userAccounts);
     accountIndex += userAccounts.length;
 
@@ -63,7 +90,8 @@ export function generateSyntheticData(
       userAccounts,
       transactionIndex,
       random,
-      incomeLevel
+      incomeLevel,
+      financialProfile
     );
     transactions.push(...userTransactions);
     transactionIndex += userTransactions.length;
@@ -73,7 +101,8 @@ export function generateSyntheticData(
       user.id,
       userAccounts,
       liabilityIndex,
-      random
+      random,
+      financialProfile
     );
     liabilities.push(...userLiabilities);
     liabilityIndex += userLiabilities.length;

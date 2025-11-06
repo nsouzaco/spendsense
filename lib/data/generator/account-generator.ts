@@ -49,35 +49,54 @@ const ACCOUNT_TEMPLATES: AccountTemplate[] = [
   },
 ];
 
-export function generateAccounts(userId: string, accountIndexStart: number, random: SeededRandom): Account[] {
+export type FinancialProfile = 
+  | 'savings_builder'
+  | 'variable_income'
+  | 'low_income'
+  | 'high_credit'
+  | 'subscription_heavy';
+
+export function generateAccounts(
+  userId: string, 
+  accountIndexStart: number, 
+  random: SeededRandom,
+  financialProfile?: FinancialProfile
+): Account[] {
   const accounts: Account[] = [];
   let accountIndex = accountIndexStart;
 
   // Everyone gets checking
-  accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[0], random));
+  accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[0], random, financialProfile));
 
-  // 80% have savings
-  if (random.boolean(0.8)) {
-    accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[1], random));
+  // Savings account distribution based on profile
+  if (financialProfile === 'savings_builder' || financialProfile === 'high_credit') {
+    // Savings builders always have savings, high credit users usually do
+    accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[1], random, financialProfile));
+  } else if (financialProfile === 'low_income') {
+    // Low income: 50% have savings
+    if (random.boolean(0.5)) {
+      accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[1], random, financialProfile));
+    }
+  } else {
+    // Others: 80% have savings
+    if (random.boolean(0.8)) {
+      accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[1], random, financialProfile));
+    }
   }
 
-  // 30% have money market
-  if (random.boolean(0.3)) {
-    accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[2], random));
-  }
-
-  // 20% have HSA
-  if (random.boolean(0.2)) {
-    accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[3], random));
-  }
-
-  // 70% have at least one credit card
-  if (random.boolean(0.7)) {
-    accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[4], random));
+  // Credit card distribution based on profile
+  if (financialProfile === 'high_credit' || financialProfile === 'subscription_heavy') {
+    // High credit and subscription heavy always have credit cards
+    accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[4], random, financialProfile));
     
-    // 30% have a second credit card
-    if (random.boolean(0.3)) {
-      accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[4], random));
+    // 50% chance of second credit card
+    if (random.boolean(0.5)) {
+      accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[4], random, financialProfile));
+    }
+  } else if (financialProfile !== 'savings_builder') {
+    // Others: 60% have credit card (except savings builders who have lower rate)
+    if (random.boolean(0.4)) {
+      accounts.push(createAccount(userId, accountIndex++, ACCOUNT_TEMPLATES[4], random, financialProfile));
     }
   }
 
@@ -88,17 +107,40 @@ function createAccount(
   userId: string,
   index: number,
   template: AccountTemplate,
-  random: SeededRandom
+  random: SeededRandom,
+  financialProfile?: FinancialProfile
 ): Account {
-  const balance = random.nextFloat(template.balanceRange[0], template.balanceRange[1]);
-  const creditLimit = template.creditLimitRange
+  let balance = random.nextFloat(template.balanceRange[0], template.balanceRange[1]);
+  let creditLimit = template.creditLimitRange
     ? random.nextFloat(template.creditLimitRange[0], template.creditLimitRange[1])
     : undefined;
 
-  // For credit cards, balance should be less than limit
-  const currentBalance = template.type === 'credit' && creditLimit
-    ? Math.min(balance, creditLimit)
-    : balance;
+  // Adjust balances based on financial profile
+  if (template.subtype === 'savings') {
+    if (financialProfile === 'savings_builder') {
+      balance = random.nextFloat(8000, 25000); // High savings
+    } else if (financialProfile === 'low_income') {
+      balance = random.nextFloat(200, 1500); // Low savings
+    }
+  }
+
+  // For credit cards, set utilization based on profile
+  let currentBalance = balance;
+  if (template.type === 'credit' && creditLimit) {
+    if (financialProfile === 'high_credit') {
+      // 70-95% utilization
+      currentBalance = creditLimit * random.nextFloat(0.70, 0.95);
+    } else if (financialProfile === 'savings_builder') {
+      // 5-20% utilization
+      currentBalance = creditLimit * random.nextFloat(0.05, 0.20);
+    } else if (financialProfile === 'subscription_heavy') {
+      // 30-50% utilization
+      currentBalance = creditLimit * random.nextFloat(0.30, 0.50);
+    } else {
+      // 20-50% utilization
+      currentBalance = Math.min(balance, creditLimit * random.nextFloat(0.20, 0.50));
+    }
+  }
 
   const mask = String(random.nextInt(1000, 9999));
 

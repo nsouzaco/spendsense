@@ -1,11 +1,19 @@
 import type { Liability, CreditCardDetails, LoanDetails, Account } from '@/types';
 import { SeededRandom, generateId, daysAgo, addDays } from './utils';
 
+export type FinancialProfile = 
+  | 'savings_builder'
+  | 'variable_income'
+  | 'low_income'
+  | 'high_credit'
+  | 'subscription_heavy';
+
 export function generateLiabilities(
   userId: string,
   accounts: Account[],
   liabilityIndexStart: number,
-  random: SeededRandom
+  random: SeededRandom,
+  financialProfile?: FinancialProfile
 ): Liability[] {
   const liabilities: Liability[] = [];
   let liabilityIndex = liabilityIndexStart;
