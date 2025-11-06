@@ -75,7 +75,6 @@ export default function OperatorDashboard() {
               <span className="text-[9px] font-light uppercase tracking-[0.08em] text-white/70">OPERATOR</span>
             </div>
             <h1 className="text-xl font-sans font-semibold tracking-tight text-white">SpendSense</h1>
-            <p className="text-sm font-light tracking-tight text-white/60">System Administration</p>
           </div>
           <button
             onClick={handleLogout}
@@ -91,8 +90,8 @@ export default function OperatorDashboard() {
         {metrics && (
           <>
             <div>
-              <h2 className="text-3xl font-extralight tracking-tight text-white mb-4">System Metrics</h2>
-              <p className="text-sm font-light tracking-tight text-white/60">Real-time system health and performance</p>
+              <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">Platform Overview</h2>
+              <p className="text-sm font-light tracking-tight text-white/60">Monitor user engagement and system performance metrics</p>
             </div>
             
             <div className="grid md:grid-cols-4 gap-4">
