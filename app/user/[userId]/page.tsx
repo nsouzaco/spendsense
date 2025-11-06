@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import type { User, SignalResult, Recommendation, Account, Transaction } from '@/types';
+import type { User, SignalResult, Recommendation, Account, Transaction, PersonaAssignment, EducationArticle } from '@/types';
 
 // Import new components
 import { Sidebar } from '@/components/user/Sidebar';
@@ -13,6 +13,8 @@ import { IncomeExpenseChart } from '@/components/user/IncomeExpenseChart';
 import { CategoryBarChart } from '@/components/user/CategoryBarChart';
 import { TransactionTable } from '@/components/user/TransactionTable';
 import { RecurringSubscriptions } from '@/components/user/RecurringSubscriptions';
+import { ArticleModal } from '@/components/user/ArticleModal';
+import { getArticleRecommendationsWithReasons } from '@/lib/education/matching';
 
 export default function UserDashboard() {
   const params = useParams();
@@ -24,10 +26,13 @@ export default function UserDashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [signals, setSignals] = useState<SignalResult[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [personas, setPersonas] = useState<PersonaAssignment[]>([]);
   const [primaryPersona, setPrimaryPersona] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<EducationArticle | null>(null);
+  const [articleModalOpen, setArticleModalOpen] = useState(false);
   const [activeView, setActiveView] = useState<'dashboard' | 'accounts' | 'transactions' | 'analytics' | 'cards' | 'education'>('dashboard');
 
   useEffect(() => {
@@ -66,11 +71,12 @@ export default function UserDashboard() {
       const recsData = await recsRes.json();
       if (recsData.success) setRecommendations(recsData.data);
 
-      // Load persona
+      // Load personas
       const personaRes = await fetch(`/api/users/${userId}/personas`);
       const personaData = await personaRes.json();
       if (personaData.success) {
         setPrimaryPersona(personaData.data.primaryPersona);
+        setPersonas(personaData.data.personas || []);
       }
 
       setLoading(false);
@@ -143,172 +149,18 @@ export default function UserDashboard() {
 
   const signal180d = signals.find(s => s.window === '180d');
 
-  // Get persona-based education content
-  const getEducationContent = () => {
-    if (primaryPersona === 'SAVINGS_BUILDER') {
-      return [
-        {
-          icon: '📈',
-          bgColor: 'bg-blue-100',
-          title: 'Investing for Beginners',
-          description: 'Learn how to grow your savings through smart investments. Explore stocks, bonds, ETFs, and building a diversified portfolio.'
-        },
-        {
-          icon: '🏠',
-          bgColor: 'bg-green-100',
-          title: 'First-Time Home Buyer Guide',
-          description: 'Ready to buy a home? Learn about mortgages, down payments, closing costs, and what to expect in the home buying process.'
-        },
-        {
-          icon: '💰',
-          bgColor: 'bg-purple-100',
-          title: 'Retirement Planning',
-          description: 'Maximize your savings for retirement. Understand 401(k)s, IRAs, compound interest, and building long-term wealth.'
-        },
-        {
-          icon: '💳',
-          bgColor: 'bg-yellow-100',
-          title: 'Smart Credit Card Rewards',
-          description: 'Leverage your good financial habits. Learn how to maximize credit card rewards and cashback while avoiding debt.'
-        },
-      ];
-    } else if (primaryPersona === 'HIGH_UTILIZATION') {
-      return [
-        {
-          icon: '🎯',
-          bgColor: 'bg-red-100',
-          title: 'Debt Payoff Strategies',
-          description: 'Learn the avalanche and snowball methods to pay down debt faster. Understand how to prioritize high-interest debt.'
-        },
-        {
-          icon: '💳',
-          bgColor: 'bg-orange-100',
-          title: 'Credit Score Improvement',
-          description: 'Boost your credit score by reducing utilization. Learn what factors affect your score and how to improve it.'
-        },
-        {
-          icon: '🔄',
-          bgColor: 'bg-purple-100',
-          title: 'Balance Transfer Guide',
-          description: 'Save on interest with balance transfers. Learn about 0% APR offers, transfer fees, and consolidation strategies.'
-        },
-        {
-          icon: '💰',
-          bgColor: 'bg-blue-100',
-          title: 'Budget Creation 101',
-          description: 'Take control of your finances. Create a realistic budget that helps you pay down debt while covering essentials.'
-        },
-      ];
-    } else if (primaryPersona === 'VARIABLE_INCOME_BUDGETER') {
-      return [
-        {
-          icon: '📊',
-          bgColor: 'bg-yellow-100',
-          title: 'Managing Irregular Income',
-          description: 'Master budgeting with variable income. Learn about income smoothing, the low-month method, and building financial stability.'
-        },
-        {
-          icon: '💰',
-          bgColor: 'bg-green-100',
-          title: 'Emergency Fund Building',
-          description: 'Build a cushion for lean months. Learn why freelancers and gig workers need larger emergency funds and how to save.'
-        },
-        {
-          icon: '🏦',
-          bgColor: 'bg-blue-100',
-          title: 'Cash Flow Management',
-          description: 'Keep your finances stable through ups and downs. Learn about cash reserves, estimated taxes, and financial planning.'
-        },
-        {
-          icon: '📈',
-          bgColor: 'bg-purple-100',
-          title: 'Side Income Ideas',
-          description: 'Diversify your income streams. Explore passive income, side hustles, and ways to create more financial security.'
-        },
-      ];
-    } else if (primaryPersona === 'SUBSCRIPTION_HEAVY') {
-      return [
-        {
-          icon: '📱',
-          bgColor: 'bg-purple-100',
-          title: 'Subscription Audit Guide',
-          description: 'Take control of recurring charges. Learn how to track, evaluate, and cancel subscriptions you no longer need.'
-        },
-        {
-          icon: '💳',
-          bgColor: 'bg-blue-100',
-          title: 'Cashback on Subscriptions',
-          description: 'Earn rewards on recurring payments. Discover credit cards that offer bonus cashback for streaming and software subscriptions.'
-        },
-        {
-          icon: '💰',
-          bgColor: 'bg-green-100',
-          title: 'Value vs. Cost Analysis',
-          description: 'Evaluate subscription value. Learn how to determine which subscriptions provide real value and which are just costing you money.'
-        },
-        {
-          icon: '🎯',
-          bgColor: 'bg-yellow-100',
-          title: 'Alternative Solutions',
-          description: 'Find cheaper alternatives. Explore free options, family plans, and bundle deals that can reduce your subscription costs.'
-        },
-      ];
-    } else if (primaryPersona === 'LOW_INCOME_STABILIZER') {
-      return [
-        {
-          icon: '💰',
-          bgColor: 'bg-green-100',
-          title: 'Micro-Saving Strategies',
-          description: 'Start building savings with small amounts. Learn about rounding up purchases, the $5 challenge, and automated savings.'
-        },
-        {
-          icon: '🎯',
-          bgColor: 'bg-blue-100',
-          title: 'Essential Budgeting',
-          description: 'Master zero-based budgeting on a tight budget. Learn to prioritize essentials and find areas to cut back without sacrifice.'
-        },
-        {
-          icon: '🛡️',
-          bgColor: 'bg-yellow-100',
-          title: 'Financial Assistance Resources',
-          description: 'Discover programs that can help. Learn about SNAP, utility assistance, earned income tax credit, and community resources.'
-        },
-        {
-          icon: '📈',
-          bgColor: 'bg-purple-100',
-          title: 'Income Boosting Ideas',
-          description: 'Explore ways to increase your income. Learn about side gigs, skills training, and opportunities for career advancement.'
-        },
-      ];
-    }
-    
-    // Default content if no persona
-    return [
-      {
-        icon: '💰',
-        bgColor: 'bg-purple-100',
-        title: 'Budgeting Basics',
-        description: 'Learn how to create and maintain a budget that works for your lifestyle. Master the 50/30/20 rule and track spending effectively.'
-      },
-      {
-        icon: '💳',
-        bgColor: 'bg-green-100',
-        title: 'Credit Score Fundamentals',
-        description: 'Understand what affects your credit score and how to improve it. Learn about credit utilization, payment history, and credit mix.'
-      },
-      {
-        icon: '📈',
-        bgColor: 'bg-blue-100',
-        title: 'Investing 101',
-        description: 'Get started with investing basics. Learn about different investment types, risk management, and building a diversified portfolio.'
-      },
-      {
-        icon: '🛡️',
-        bgColor: 'bg-yellow-100',
-        title: 'Emergency Funds',
-        description: 'Discover why emergency funds are crucial and how much you should save. Learn strategies to build your safety net quickly.'
-      },
-    ];
+  // Get personalized article recommendations
+  const articleRecommendations = user ? getArticleRecommendationsWithReasons(user, signal180d || null, personas, 6) : [];
+
+  // Handle article modal
+  const handleReadArticle = (article: EducationArticle) => {
+    setSelectedArticle(article);
+    setArticleModalOpen(true);
+  };
+
+  const handleCloseArticle = () => {
+    setArticleModalOpen(false);
+    setTimeout(() => setSelectedArticle(null), 200); // Clear after animation
   };
 
   return (
@@ -546,26 +398,60 @@ export default function UserDashboard() {
                 </p>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2">
-                {getEducationContent().map((item, index) => (
-                  <div key={index} className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${item.bgColor}`}>
-                        <span className="text-2xl">{item.icon}</span>
+              {articleRecommendations.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2">
+                  {articleRecommendations.map((rec, index) => (
+                    <div key={rec.article.id} className="rounded-xl border border-gray-200 bg-white p-6 space-y-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${rec.article.bgColor} flex-shrink-0`}>
+                            <span className="text-2xl">{rec.article.icon}</span>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900">{rec.article.title}</h3>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                              <span>⏱️ {rec.article.readTime} min</span>
+                              <span>•</span>
+                              <span className="capitalize">{rec.article.difficulty}</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
+                      
+                      <p className="text-sm text-purple-700 bg-purple-50 rounded-lg px-3 py-2 border border-purple-100">
+                        {rec.reason}
+                      </p>
+                      
+                      <p className="text-sm text-gray-600">
+                        {rec.article.summary}
+                      </p>
+                      
+                      <Button 
+                        onClick={() => handleReadArticle(rec.article)}
+                        variant="outline" 
+                        className="w-full hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300"
+                      >
+                        Read Full Article →
+                      </Button>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      {item.description}
-                    </p>
-                    <Button variant="outline" className="w-full">Read More →</Button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+                  <p className="text-gray-600">No personalized articles available yet. Complete your financial profile to see recommendations.</p>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      {/* Article Modal */}
+      <ArticleModal 
+        article={selectedArticle}
+        open={articleModalOpen}
+        onClose={handleCloseArticle}
+      />
     </div>
   );
 }

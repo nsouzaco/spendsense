@@ -9,4 +9,5 @@ export * from './recommendation';
 export * from './consent';
 export * from './api';
 export * from './operator';
+export * from './education';
 
