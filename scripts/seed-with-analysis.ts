@@ -88,25 +88,26 @@ async function seedWithAnalysis() {
 
     // Step 5: Insert liabilities
     console.log('💰 Inserting liabilities...');
-    for (const liability of syntheticData.liabilities) {
+    // Create a set of valid account IDs
+    const validAccountIds = new Set(syntheticData.accounts.map(acc => acc.id));
+    
+    // Only insert liabilities with valid account references
+    const validLiabilities = syntheticData.liabilities.filter(l => validAccountIds.has(l.accountId));
+    
+    for (const liability of validLiabilities) {
       await sql`
         INSERT INTO liabilities (
-          id, user_id, type, name, current_balance, original_balance,
-          interest_rate, minimum_payment, due_date
+          id, user_id, account_id, type, details
         ) VALUES (
           ${liability.id},
           ${liability.userId},
+          ${liability.accountId},
           ${liability.type},
-          ${liability.name},
-          ${liability.currentBalance},
-          ${liability.originalBalance},
-          ${liability.interestRate},
-          ${liability.minimumPayment},
-          ${liability.dueDate || null}
+          ${JSON.stringify(liability.details)}
         )
       `;
     }
-    console.log(`✅ Inserted ${syntheticData.liabilities.length} liabilities\n`);
+    console.log(`✅ Inserted ${validLiabilities.length} liabilities (${syntheticData.liabilities.length - validLiabilities.length} skipped due to invalid account references)\n`);
 
     // Step 6: Generate signals and assign personas
     console.log('🔍 Generating signals and assigning personas...\n');
