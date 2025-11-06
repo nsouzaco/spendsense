@@ -131,12 +131,8 @@ export default function OperatorDashboard() {
         {/* Metrics Overview */}
         {metrics && (
           <>
-            <div className="flex justify-between items-center">
-            <div>
-                <h2 className="text-3xl font-extralight tracking-tight text-gray-900 mb-2">Platform Overview</h2>
-                <p className="text-sm font-light tracking-tight text-gray-600">Monitor user engagement and system performance metrics</p>
-              </div>
-              {metrics && metrics.totalUsers > metrics.usersWithPersona && (
+            {metrics && metrics.totalUsers > metrics.usersWithPersona && (
+              <div className="flex justify-end">
                 <button
                   onClick={handleAnalyzeAll}
                   disabled={analyzing}
@@ -144,119 +140,124 @@ export default function OperatorDashboard() {
                 >
                   {analyzing ? 'Analyzing...' : `🔍 Analyze ${metrics.totalUsers - metrics.usersWithPersona} Users`}
                 </button>
-              )}
-            </div>
-            
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-6 max-w-sm">
-              <h3 className="text-sm font-light tracking-tight text-gray-600 mb-2">Total Users</h3>
-              <p className="text-4xl font-extralight tracking-tight text-gray-900">{metrics.totalUsers}</p>
-              <p className="text-xs font-light tracking-tight text-gray-500 mt-2">
-                Registered on platform
-              </p>
-            </div>
-
-            {/* User Financial Categories */}
-            <div className="mt-8">
-              <h3 className="text-2xl font-extralight tracking-tight text-gray-900 mb-4">User Financial Categories</h3>
-              <p className="text-sm font-light tracking-tight text-gray-600 mb-4">Distribution of users by financial health profile</p>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {/* High Utilization */}
-                <div className="rounded-xl border border-red-200 bg-red-50 shadow-sm p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100">
-                      <span className="text-lg">💳</span>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-light tracking-tight text-gray-900">High Credit Usage</h4>
-                      <p className="text-xs font-light tracking-tight text-gray-600">Credit card utilization</p>
-                    </div>
-                  </div>
-                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
-                    {metrics.personaBreakdown?.HIGH_UTILIZATION || 0}
-                  </p>
-                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
-                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.HIGH_UTILIZATION || 0) / metrics.totalUsers) * 100) : 0}% of users
-                  </p>
-                </div>
-
-                {/* Savings Builder */}
-                <div className="rounded-xl border border-green-200 bg-green-50 shadow-sm p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
-                      <span className="text-lg">💰</span>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-light tracking-tight text-gray-900">Active Savers</h4>
-                      <p className="text-xs font-light tracking-tight text-gray-600">Building savings</p>
-                    </div>
-                  </div>
-                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
-                    {metrics.personaBreakdown?.SAVINGS_BUILDER || 0}
-                  </p>
-                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
-                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.SAVINGS_BUILDER || 0) / metrics.totalUsers) * 100) : 0}% of users
-                  </p>
-                </div>
-
-                {/* Variable Income */}
-                <div className="rounded-xl border border-yellow-200 bg-yellow-50 shadow-sm p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100">
-                      <span className="text-lg">📊</span>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-light tracking-tight text-gray-900">Variable Income</h4>
-                      <p className="text-xs font-light tracking-tight text-gray-600">Irregular earnings</p>
-                    </div>
-                  </div>
-                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
-                    {metrics.personaBreakdown?.VARIABLE_INCOME_BUDGETER || 0}
-                  </p>
-                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
-                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.VARIABLE_INCOME_BUDGETER || 0) / metrics.totalUsers) * 100) : 0}% of users
-                  </p>
-                </div>
-
-                {/* Subscription Heavy */}
-                <div className="rounded-xl border border-purple-200 bg-purple-50 shadow-sm p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
-                      <span className="text-lg">📱</span>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-light tracking-tight text-gray-900">High Subscriptions</h4>
-                      <p className="text-xs font-light tracking-tight text-gray-600">Many recurring bills</p>
-                    </div>
-                  </div>
-                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
-                    {metrics.personaBreakdown?.SUBSCRIPTION_HEAVY || 0}
-                  </p>
-                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
-                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.SUBSCRIPTION_HEAVY || 0) / metrics.totalUsers) * 100) : 0}% of users
-                  </p>
-                </div>
-
-                {/* Low Income */}
-                <div className="rounded-xl border border-blue-200 bg-blue-50 shadow-sm p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
-                      <span className="text-lg">🎯</span>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-light tracking-tight text-gray-900">Limited Income</h4>
-                      <p className="text-xs font-light tracking-tight text-gray-600">Need micro-budgeting</p>
-                    </div>
-                  </div>
-                  <p className="text-2xl font-extralight tracking-tight text-gray-900">
-                    {metrics.personaBreakdown?.LOW_INCOME_STABILIZER || 0}
-                  </p>
-                  <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
-                    {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.LOW_INCOME_STABILIZER || 0) / metrics.totalUsers) * 100) : 0}% of users
-                  </p>
-                </div>
               </div>
-            </div>
+            )}
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {/* Total Users */}
+              <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
+                    <span className="text-lg">👥</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-light tracking-tight text-gray-900">Total Users</h4>
+                    <p className="text-xs font-light tracking-tight text-gray-600">Registered on platform</p>
+                  </div>
+                </div>
+                <p className="text-2xl font-extralight tracking-tight text-gray-900">
+                  {metrics.totalUsers}
+                </p>
+                <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
+                  100% of users
+                </p>
+              </div>
+              
+              {/* High Utilization */}
+              <div className="rounded-xl border border-red-200 bg-red-50 shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100">
+                    <span className="text-lg">💳</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-light tracking-tight text-gray-900">High Credit Usage</h4>
+                    <p className="text-xs font-light tracking-tight text-gray-600">Credit card utilization</p>
+                  </div>
+                </div>
+                <p className="text-2xl font-extralight tracking-tight text-gray-900">
+                  {metrics.personaBreakdown?.HIGH_UTILIZATION || 0}
+                </p>
+                <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
+                  {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.HIGH_UTILIZATION || 0) / metrics.totalUsers) * 100) : 0}% of users
+                </p>
+              </div>
+
+              {/* Savings Builder */}
+              <div className="rounded-xl border border-green-200 bg-green-50 shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100">
+                    <span className="text-lg">💰</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-light tracking-tight text-gray-900">Active Savers</h4>
+                    <p className="text-xs font-light tracking-tight text-gray-600">Building savings</p>
+                  </div>
+                </div>
+                <p className="text-2xl font-extralight tracking-tight text-gray-900">
+                  {metrics.personaBreakdown?.SAVINGS_BUILDER || 0}
+                </p>
+                <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
+                  {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.SAVINGS_BUILDER || 0) / metrics.totalUsers) * 100) : 0}% of users
+                </p>
+              </div>
+
+              {/* Variable Income */}
+              <div className="rounded-xl border border-yellow-200 bg-yellow-50 shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100">
+                    <span className="text-lg">📊</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-light tracking-tight text-gray-900">Variable Income</h4>
+                    <p className="text-xs font-light tracking-tight text-gray-600">Irregular earnings</p>
+                  </div>
+                </div>
+                <p className="text-2xl font-extralight tracking-tight text-gray-900">
+                  {metrics.personaBreakdown?.VARIABLE_INCOME_BUDGETER || 0}
+                </p>
+                <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
+                  {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.VARIABLE_INCOME_BUDGETER || 0) / metrics.totalUsers) * 100) : 0}% of users
+                </p>
+              </div>
+
+              {/* Subscription Heavy */}
+              <div className="rounded-xl border border-purple-200 bg-purple-50 shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
+                    <span className="text-lg">📱</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-light tracking-tight text-gray-900">High Subscriptions</h4>
+                    <p className="text-xs font-light tracking-tight text-gray-600">Many recurring bills</p>
+                  </div>
+                </div>
+                <p className="text-2xl font-extralight tracking-tight text-gray-900">
+                  {metrics.personaBreakdown?.SUBSCRIPTION_HEAVY || 0}
+                </p>
+                <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
+                  {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.SUBSCRIPTION_HEAVY || 0) / metrics.totalUsers) * 100) : 0}% of users
+                </p>
+              </div>
+
+              {/* Low Income */}
+              <div className="rounded-xl border border-blue-200 bg-blue-50 shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                    <span className="text-lg">🎯</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-light tracking-tight text-gray-900">Limited Income</h4>
+                    <p className="text-xs font-light tracking-tight text-gray-600">Need micro-budgeting</p>
+                  </div>
+                </div>
+                <p className="text-2xl font-extralight tracking-tight text-gray-900">
+                  {metrics.personaBreakdown?.LOW_INCOME_STABILIZER || 0}
+                </p>
+                <p className="text-xs font-light tracking-tight text-gray-600 mt-1">
+                  {metrics.totalUsers > 0 ? Math.round(((metrics.personaBreakdown?.LOW_INCOME_STABILIZER || 0) / metrics.totalUsers) * 100) : 0}% of users
+                </p>
+              </div>
+              </div>
           </>
         )}
 
