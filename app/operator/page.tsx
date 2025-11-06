@@ -149,20 +149,12 @@ export default function OperatorDashboard() {
               )}
             </div>
             
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
                 <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">Total Users</h3>
                 <p className="text-4xl font-extralight tracking-tight text-white">{metrics.totalUsers}</p>
                 <p className="text-xs font-light tracking-tight text-white/50 mt-2">
                   Registered on platform
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-                <h3 className="text-sm font-light tracking-tight text-white/70 mb-2">AI Recommendations</h3>
-                <p className="text-4xl font-extralight tracking-tight text-white">{metrics.totalRecommendations}</p>
-                <p className="text-xs font-light tracking-tight text-white/50 mt-2">
-                  {metrics.averageRecommendationsPerUser.toFixed(1)} per user average
                 </p>
               </div>
 
