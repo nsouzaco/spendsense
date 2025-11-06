@@ -26,30 +26,42 @@ export function Sidebar({ userId, userName }: SidebarProps) {
     router.push('/');
   };
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const navigation = [
     {
       name: 'Dashboard',
       icon: LayoutDashboard,
+      action: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
       active: true,
     },
     {
       name: 'Accounts',
       icon: Wallet,
+      action: () => scrollToSection('accounts-section'),
       active: false,
     },
     {
       name: 'Transactions',
       icon: ArrowLeftRight,
+      action: () => scrollToSection('transactions-section'),
       active: false,
     },
     {
       name: 'Analytics',
       icon: TrendingUp,
+      action: () => scrollToSection('analytics-section'),
       active: false,
     },
     {
       name: 'Cards',
       icon: CreditCard,
+      action: () => scrollToSection('accounts-section'),
       active: false,
     },
   ];
@@ -71,6 +83,7 @@ export function Sidebar({ userId, userName }: SidebarProps) {
           return (
             <button
               key={item.name}
+              onClick={item.action}
               className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 item.active
                   ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'

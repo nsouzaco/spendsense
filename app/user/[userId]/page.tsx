@@ -176,7 +176,7 @@ export default function UserDashboard() {
           <StatCards signals={signal180d} accounts={accounts} transactions={transactions} />
 
           {/* Charts Section */}
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div id="analytics-section" className="grid gap-6 lg:grid-cols-2 scroll-mt-6">
             <IncomeExpenseChart transactions={transactions} days={30} />
             <CategoryBarChart transactions={transactions} />
           </div>
@@ -185,7 +185,7 @@ export default function UserDashboard() {
           {signal180d && <RecurringSubscriptions signals={signal180d} />}
 
           {/* Accounts Section */}
-          <div className="space-y-4">
+          <div id="accounts-section" className="space-y-4 scroll-mt-6">
             <h2 className="text-xl font-semibold text-gray-900">Your Accounts</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {accounts.map(account => (
@@ -195,10 +195,12 @@ export default function UserDashboard() {
           </div>
 
           {/* Recent Transactions */}
-          <TransactionTable transactions={transactions} limit={10} />
+          <div id="transactions-section" className="scroll-mt-6">
+            <TransactionTable transactions={transactions} limit={10} />
+          </div>
 
           {/* AI Insights Section */}
-          <div className="space-y-4">
+          <div id="insights-section" className="space-y-4 scroll-mt-6">
             <h2 className="text-xl font-semibold text-gray-900">AI-Powered Insights</h2>
             {recommendations.length === 0 ? (
               <div className="rounded-xl border border-gray-200 bg-white p-12 text-center space-y-6">
