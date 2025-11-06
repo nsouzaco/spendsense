@@ -9,10 +9,11 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import type { SignalResult } from '@/types';
+import type { SignalResult, Transaction } from '@/types';
 
 interface RecurringSubscriptionsProps {
   signals?: SignalResult;
+  transactions: Transaction[];
 }
 
 const merchantIcons: Record<string, string> = {
@@ -28,10 +29,95 @@ const merchantIcons: Record<string, string> = {
   'Insurance': '🛡️',
 };
 
-export function RecurringSubscriptions({ signals }: RecurringSubscriptionsProps) {
-  const subscriptions = signals?.subscriptionSignals;
+// Helper function to detect recurring subscriptions from transactions
+function detectRecurringFromTransactions(transactions: Transaction[]) {
+  // Only look at last 6 months of debit transactions
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  
+  const recentTransactions = transactions.filter(t => 
+    t.transactionType === 'debit' && 
+    new Date(t.date) >= sixMonthsAgo
+  );
 
-  if (!signals || !subscriptions || subscriptions.totalRecurringCount === 0) {
+  // Group by merchant name
+  const merchantGroups: Record<string, Transaction[]> = {};
+  recentTransactions.forEach(t => {
+    const merchant = t.merchantName || t.name;
+    if (!merchantGroups[merchant]) {
+      merchantGroups[merchant] = [];
+    }
+    merchantGroups[merchant].push(t);
+  });
+
+  // Find recurring merchants (3+ transactions with similar amounts)
+  const recurringMerchants = Object.entries(merchantGroups)
+    .filter(([_, txns]) => txns.length >= 3)
+    .map(([merchant, txns]) => {
+      const amounts = txns.map(t => Math.abs(t.amount));
+      const avgAmount = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+      const totalAmount = amounts.reduce((a, b) => a + b, 0);
+      
+      // Check if amounts are similar (within 20% variance)
+      const variance = amounts.every(amt => 
+        Math.abs(amt - avgAmount) / avgAmount < 0.2
+      );
+      
+      if (!variance) return null;
+
+      // Sort by date
+      const sortedTxns = [...txns].sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+
+      // Calculate average days between transactions
+      const daysBetween = [];
+      for (let i = 1; i < sortedTxns.length; i++) {
+        const days = Math.abs(
+          (new Date(sortedTxns[i].date).getTime() - new Date(sortedTxns[i-1].date).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        daysBetween.push(days);
+      }
+      const avgDays = daysBetween.reduce((a, b) => a + b, 0) / daysBetween.length;
+
+      // Determine cadence
+      const cadence = avgDays <= 10 ? 'weekly' : 'monthly';
+
+      return {
+        merchantName: merchant,
+        occurrences: txns.length,
+        averageAmount: avgAmount,
+        totalAmount: totalAmount,
+        cadence: cadence as 'weekly' | 'monthly',
+        lastDate: sortedTxns[sortedTxns.length - 1].date,
+      };
+    })
+    .filter((m): m is NonNullable<typeof m> => m !== null)
+    .sort((a, b) => b.averageAmount - a.averageAmount);
+
+  // Calculate monthly recurring spend (for weekly, multiply by ~4.3)
+  const monthlyRecurringSpend = recurringMerchants.reduce((sum, m) => {
+    const monthlyAmount = m.cadence === 'weekly' ? m.averageAmount * 4.3 : m.averageAmount;
+    return sum + monthlyAmount;
+  }, 0);
+
+  // Calculate total spending
+  const totalSpending = recentTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const subscriptionShare = totalSpending > 0 ? (monthlyRecurringSpend / (totalSpending / 6)) * 100 : 0;
+
+  return {
+    recurringMerchants,
+    monthlyRecurringSpend,
+    subscriptionShare,
+    totalRecurringCount: recurringMerchants.length,
+  };
+}
+
+export function RecurringSubscriptions({ signals, transactions }: RecurringSubscriptionsProps) {
+  // Try to use signals first, fall back to transaction detection
+  const subscriptions = signals?.subscriptionSignals || detectRecurringFromTransactions(transactions);
+
+  if (subscriptions.totalRecurringCount === 0) {
     return (
       <Card className="border-gray-200 bg-white shadow-sm">
         <CardContent className="p-12">
