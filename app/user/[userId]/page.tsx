@@ -26,6 +26,7 @@ export default function UserDashboard() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [activeView, setActiveView] = useState<'dashboard' | 'accounts' | 'transactions' | 'analytics' | 'cards' | 'education'>('dashboard');
 
   useEffect(() => {
     loadUserData();
