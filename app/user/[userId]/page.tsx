@@ -295,6 +295,7 @@ export default function UserDashboard() {
             )}
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </div>
   );
