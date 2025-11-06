@@ -212,10 +212,10 @@ export class PostgresStorageAdapter implements StorageAdapter {
     // Get persona breakdown
     const personaCounts = await sql`
       SELECT 
-        data->>'type' as persona_type,
+        data->>'personaType' as persona_type,
         COUNT(*) as count
       FROM personas
-      GROUP BY data->>'type'
+      GROUP BY data->>'personaType'
     `;
     
     const personaBreakdown: Record<string, number> = {
