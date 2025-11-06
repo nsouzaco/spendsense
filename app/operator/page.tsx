@@ -419,22 +419,165 @@ export default function OperatorDashboard() {
                   )}
                 </div>
 
-                {/* Analytics */}
+                {/* Send Recommendations */}
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <h3 className="text-lg font-light tracking-tight text-white mb-3">Analytics</h3>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">Signals</p>
-                      <p className="text-2xl font-extralight tracking-tight text-white">{selectedUser.signalCount || 0}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">Recommendations</p>
-                      <p className="text-2xl font-extralight tracking-tight text-white">{selectedUser.recommendationCount || 0}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-light tracking-tight text-white/50 mb-1">Personas</p>
-                      <p className="text-2xl font-extralight tracking-tight text-white">{selectedUser.personaCount || 0}</p>
-                    </div>
+                  <h3 className="text-lg font-light tracking-tight text-white mb-3">Send Recommendations</h3>
+                  <p className="text-sm font-light tracking-tight text-white/60 mb-4">
+                    Based on financial category: <span className="text-purple-200">{selectedUser.primaryPersona || 'None'}</span>
+                  </p>
+                  
+                  <div className="space-y-3">
+                    {/* Recommendations based on persona type */}
+                    {selectedUser.primaryPersona === 'SAVINGS_BUILDER' && (
+                      <>
+                        <div className="flex items-center justify-between rounded-lg border border-green-500/30 bg-green-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">💳 Premium Rewards Credit Card</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Great for users with good credit and savings</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Credit card offer sent to user!')}
+                            className="rounded-lg border border-green-500/30 bg-green-500/20 px-4 py-2 text-xs font-light tracking-tight text-green-200 backdrop-blur-sm transition-colors hover:bg-green-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">📈 High-Yield Savings Account</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Maximize savings with better interest rates</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Savings account offer sent to user!')}
+                            className="rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-2 text-xs font-light tracking-tight text-blue-200 backdrop-blur-sm transition-colors hover:bg-blue-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {selectedUser.primaryPersona === 'HIGH_UTILIZATION' && (
+                      <>
+                        <div className="flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">🔄 Debt Consolidation Loan</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Lower interest rate, single payment</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Debt consolidation offer sent to user!')}
+                            className="rounded-lg border border-red-500/30 bg-red-500/20 px-4 py-2 text-xs font-light tracking-tight text-red-200 backdrop-blur-sm transition-colors hover:bg-red-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg border border-orange-500/30 bg-orange-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">💰 Balance Transfer Card (0% APR)</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Move high-interest debt, save on interest</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Balance transfer card offer sent to user!')}
+                            className="rounded-lg border border-orange-500/30 bg-orange-500/20 px-4 py-2 text-xs font-light tracking-tight text-orange-200 backdrop-blur-sm transition-colors hover:bg-orange-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {selectedUser.primaryPersona === 'VARIABLE_INCOME_BUDGETER' && (
+                      <>
+                        <div className="flex items-center justify-between rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">💼 Income Smoothing Program</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Tools to manage irregular income</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Income smoothing program sent to user!')}
+                            className="rounded-lg border border-yellow-500/30 bg-yellow-500/20 px-4 py-2 text-xs font-light tracking-tight text-yellow-200 backdrop-blur-sm transition-colors hover:bg-yellow-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">🏦 Line of Credit</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Flexible access to funds during low-income periods</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Line of credit offer sent to user!')}
+                            className="rounded-lg border border-yellow-500/30 bg-yellow-500/20 px-4 py-2 text-xs font-light tracking-tight text-yellow-200 backdrop-blur-sm transition-colors hover:bg-yellow-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {selectedUser.primaryPersona === 'SUBSCRIPTION_HEAVY' && (
+                      <>
+                        <div className="flex items-center justify-between rounded-lg border border-purple-500/30 bg-purple-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">📱 Subscription Management Tool</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Track and cancel unwanted subscriptions</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Subscription management tool sent to user!')}
+                            className="rounded-lg border border-purple-500/30 bg-purple-500/20 px-4 py-2 text-xs font-light tracking-tight text-purple-200 backdrop-blur-sm transition-colors hover:bg-purple-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg border border-purple-500/30 bg-purple-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">💳 Cashback Card (Recurring Purchases)</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Earn rewards on your subscriptions</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Cashback card offer sent to user!')}
+                            className="rounded-lg border border-purple-500/30 bg-purple-500/20 px-4 py-2 text-xs font-light tracking-tight text-purple-200 backdrop-blur-sm transition-colors hover:bg-purple-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {selectedUser.primaryPersona === 'LOW_INCOME_STABILIZER' && (
+                      <>
+                        <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">🎯 Micro-Savings Program</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Start building savings with small amounts</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Micro-savings program sent to user!')}
+                            className="rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-2 text-xs font-light tracking-tight text-blue-200 backdrop-blur-sm transition-colors hover:bg-blue-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
+                          <div>
+                            <p className="text-sm font-light tracking-tight text-white">📚 Financial Assistance Resources</p>
+                            <p className="text-xs font-light tracking-tight text-white/50">Access programs and support services</p>
+                          </div>
+                          <button
+                            onClick={() => alert('Financial assistance resources sent to user!')}
+                            className="rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-2 text-xs font-light tracking-tight text-blue-200 backdrop-blur-sm transition-colors hover:bg-blue-500/30"
+                          >
+                            Send Offer
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {!selectedUser.primaryPersona && (
+                      <p className="text-sm font-light tracking-tight text-white/40 text-center py-4">
+                        No persona assigned yet. Analyze this user first to see recommendations.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
