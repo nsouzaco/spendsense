@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import type { SignalResult } from '@/types';
 
 interface RecurringSubscriptionsProps {
-  signals: SignalResult;
+  signals?: SignalResult;
 }
 
 const merchantIcons: Record<string, string> = {
@@ -29,9 +29,9 @@ const merchantIcons: Record<string, string> = {
 };
 
 export function RecurringSubscriptions({ signals }: RecurringSubscriptionsProps) {
-  const subscriptions = signals.subscriptionSignals;
+  const subscriptions = signals?.subscriptionSignals;
 
-  if (!subscriptions || subscriptions.totalRecurringCount === 0) {
+  if (!signals || !subscriptions || subscriptions.totalRecurringCount === 0) {
     return (
       <Card className="border-gray-200 bg-white shadow-sm">
         <CardContent className="p-12">

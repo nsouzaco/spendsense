@@ -185,7 +185,7 @@ export default function UserDashboard() {
                 <CategoryBarChart transactions={transactions} />
               </div>
 
-              {signal180d && <RecurringSubscriptions signals={signal180d} />}
+              <RecurringSubscriptions signals={signal180d} />
 
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-gray-900">Quick Overview</h2>
@@ -303,7 +303,7 @@ export default function UserDashboard() {
                 <CategoryBarChart transactions={transactions} />
               </div>
 
-              {signal180d && <RecurringSubscriptions signals={signal180d} />}
+              <RecurringSubscriptions signals={signal180d} />
             </div>
           )}
 
