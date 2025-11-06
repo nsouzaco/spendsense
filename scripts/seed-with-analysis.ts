@@ -138,19 +138,19 @@ async function seedWithAnalysis() {
         };
 
         // Get user's accounts
-        const userAccounts: Account[] = syntheticData.accounts.filter(
+        const userAccounts = syntheticData.accounts.filter(
           a => a.userId === user.id
-        );
+        ) as Account[];
 
         // Get user's transactions
-        const userTransactions: Transaction[] = syntheticData.transactions.filter(
+        const userTransactions = syntheticData.transactions.filter(
           t => userAccounts.some(a => a.id === t.accountId)
-        );
+        ) as Transaction[];
 
         // Get user's liabilities
-        const userLiabilities: Liability[] = syntheticData.liabilities.filter(
+        const userLiabilities = syntheticData.liabilities.filter(
           l => l.userId === user.id
-        );
+        ) as Liability[];
 
         // Generate signals for both time windows
         const windows: TimeWindow[] = ['30d', '180d'];
