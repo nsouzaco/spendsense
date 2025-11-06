@@ -51,7 +51,12 @@ export default function UserDashboard() {
       // Load signals
       const signalsRes = await fetch(`/api/users/${userId}/signals`);
       const signalsData = await signalsRes.json();
-      if (signalsData.success) setSignals(signalsData.data);
+      if (signalsData.success) {
+        setSignals(signalsData.data || []);
+      } else {
+        // Signals not found yet - that's okay, we'll show a message
+        setSignals([]);
+      }
 
       // Load recommendations
       const recsRes = await fetch(`/api/users/${userId}/recommendations`);
@@ -158,7 +163,43 @@ export default function UserDashboard() {
         )}
 
         {/* Main Dashboard */}
-        {signal180d && (
+        {!signal180d ? (
+          // No signals yet - show onboarding message
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-12 backdrop-blur-xl text-center space-y-6">
+            <div className="mx-auto w-16 h-16 rounded-full border-2 border-white/10 flex items-center justify-center">
+              <svg className="w-8 h-8 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-extralight tracking-tight text-white">Welcome to SpendSense!</h3>
+              <p className="text-sm font-light tracking-tight text-white/70 max-w-md mx-auto">
+                {processing 
+                  ? 'Analyzing your financial data with AI... This may take a few minutes.' 
+                  : 'Your financial data is ready. Click below to analyze your spending patterns and generate personalized insights.'
+                }
+              </p>
+            </div>
+            {processing && (
+              <div className="mx-auto w-64">
+                <div className="h-1 rounded-full bg-white/10 overflow-hidden">
+                  <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-purple-500 to-purple-300 animate-pulse" />
+                </div>
+                <p className="text-xs font-light tracking-tight text-white/50 mt-3">
+                  Generating personalized recommendations...
+                </p>
+              </div>
+            )}
+            <Button 
+              onClick={handleProcessData} 
+              disabled={processing}
+              size="lg"
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {processing ? 'Processing... Please wait' : '🚀 Analyze My Finances'}
+            </Button>
+          </div>
+        ) : (
           <>
             <div>
               <h2 className="text-3xl font-extralight tracking-tight text-white mb-2">Dashboard</h2>
