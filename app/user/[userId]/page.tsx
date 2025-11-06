@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import type { User, SignalResult, Recommendation, Account, Transaction } from '@/types';
 
@@ -176,49 +175,31 @@ export default function UserDashboard() {
           {/* Stat Cards - Always show */}
           <StatCards signals={signal180d} accounts={accounts} transactions={transactions} />
 
-          {/* Tabs Navigation */}
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="bg-white border border-gray-200">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 text-gray-600">
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="transactions" className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 text-gray-600">
-                Transactions
-              </TabsTrigger>
-              <TabsTrigger value="accounts" className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 text-gray-600">
-                Accounts
-              </TabsTrigger>
-              <TabsTrigger value="insights" className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 text-gray-600">
-                Insights
-              </TabsTrigger>
-            </TabsList>
+          {/* Charts Section */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <IncomeExpenseChart transactions={transactions} days={30} />
+            <CategoryBarChart transactions={transactions} />
+          </div>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <IncomeExpenseChart transactions={transactions} days={30} />
-              <CategoryBarChart transactions={transactions} />
-            </div>
-            {signal180d && <RecurringSubscriptions signals={signal180d} />}
-            <TransactionTable transactions={transactions} limit={10} />
-          </TabsContent>
+          {/* Recurring Subscriptions */}
+          {signal180d && <RecurringSubscriptions signals={signal180d} />}
 
-          {/* Transactions Tab */}
-          <TabsContent value="transactions" className="space-y-6">
-            <TransactionTable transactions={transactions} />
-          </TabsContent>
-
-          {/* Accounts Tab */}
-          <TabsContent value="accounts" className="space-y-6">
+          {/* Accounts Section */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900">Your Accounts</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {accounts.map(account => (
                 <AccountCard key={account.id} account={account} variant="default" />
               ))}
             </div>
-          </TabsContent>
+          </div>
 
-          {/* Insights Tab */}
-          <TabsContent value="insights" className="space-y-6">
+          {/* Recent Transactions */}
+          <TransactionTable transactions={transactions} limit={10} />
+
+          {/* AI Insights Section */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900">AI-Powered Insights</h2>
             {recommendations.length === 0 ? (
               <div className="rounded-xl border border-gray-200 bg-white p-12 text-center space-y-6">
                 <div className="mx-auto w-16 h-16 rounded-full border-2 border-gray-200 flex items-center justify-center">
@@ -293,8 +274,7 @@ export default function UserDashboard() {
                 ))}
               </div>
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
         </div>
       </div>
     </div>
