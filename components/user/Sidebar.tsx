@@ -60,7 +60,6 @@ export function Sidebar({ userId, userName }: SidebarProps) {
       <div className="flex h-16 items-center border-b border-white/10 px-6">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-purple-400 shadow-lg shadow-purple-500/50">
-            <span className="text-lg font-semibold text-white">S</span>
           </div>
           <span className="text-xl font-semibold tracking-tight text-white">SpendSense</span>
         </div>
@@ -71,10 +70,6 @@ export function Sidebar({ userId, userName }: SidebarProps) {
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-purple-400 text-white font-medium shadow-lg shadow-purple-500/30">
             {userName.charAt(0).toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{userName}</p>
-            <p className="text-xs text-white/50 truncate">Personal Account</p>
           </div>
         </div>
       </div>
