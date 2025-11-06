@@ -139,7 +139,9 @@ export default function UserDashboard() {
       {/* Sidebar */}
       <Sidebar 
         userId={userId} 
-        userName={`${user.firstName} ${user.lastName}`} 
+        userName={`${user.firstName} ${user.lastName}`}
+        activeView={activeView}
+        onViewChange={setActiveView}
       />
 
       {/* Main Content */}
@@ -160,7 +162,7 @@ export default function UserDashboard() {
 
         <div className="px-8 py-6 space-y-6">
           {/* Consent Status */}
-          {!user.consentStatus.active && (
+          {!user.consentStatus.active && activeView === 'dashboard' && (
             <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-6">
               <h3 className="text-lg font-medium text-yellow-900 mb-2">Consent Required</h3>
               <p className="text-sm text-yellow-800 mb-4">
@@ -172,111 +174,250 @@ export default function UserDashboard() {
             </div>
           )}
 
-          {/* Stat Cards - Always show */}
-          <StatCards signals={signal180d} accounts={accounts} transactions={transactions} />
-
-          {/* Charts Section */}
-          <div id="analytics-section" className="grid gap-6 lg:grid-cols-2 scroll-mt-6">
-            <IncomeExpenseChart transactions={transactions} days={30} />
-            <CategoryBarChart transactions={transactions} />
-          </div>
-
-          {/* Recurring Subscriptions */}
-          {signal180d && <RecurringSubscriptions signals={signal180d} />}
-
-          {/* Accounts Section */}
-          <div id="accounts-section" className="space-y-4 scroll-mt-6">
-            <h2 className="text-xl font-semibold text-gray-900">Your Accounts</h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {accounts.map(account => (
-                <AccountCard key={account.id} account={account} variant="default" />
-              ))}
-            </div>
-          </div>
-
-          {/* Recent Transactions */}
-          <div id="transactions-section" className="scroll-mt-6">
-            <TransactionTable transactions={transactions} limit={10} />
-          </div>
-
-          {/* AI Insights Section */}
-          <div id="insights-section" className="space-y-4 scroll-mt-6">
-            <h2 className="text-xl font-semibold text-gray-900">AI-Powered Insights</h2>
-            {recommendations.length === 0 ? (
-              <div className="rounded-xl border border-gray-200 bg-white p-12 text-center space-y-6">
-                <div className="mx-auto w-16 h-16 rounded-full border-2 border-gray-200 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-semibold text-gray-900">Get Personalized Insights</h3>
-                  <p className="text-sm text-gray-600 max-w-md mx-auto">
-                    {processing 
-                      ? 'Analyzing your financial data with AI... This may take a few minutes.' 
-                      : 'Click below to analyze your spending patterns and get AI-powered recommendations tailored to your financial behavior.'
-                    }
-                  </p>
-                </div>
-                {processing && (
-                  <div className="mx-auto w-64">
-                    <div className="h-1 rounded-full bg-gray-200 overflow-hidden">
-                      <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 animate-pulse" />
-                    </div>
-                  </div>
-                )}
-                <Button 
-                  onClick={handleProcessData} 
-                  disabled={processing}
-                  size="lg"
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                  {processing ? 'Processing... Please wait' : '💡 Generate Insights'}
-                </Button>
+          {/* Dashboard View */}
+          {activeView === 'dashboard' && (
+            <>
+              <StatCards signals={signal180d} accounts={accounts} transactions={transactions} />
+              
+              <div className="grid gap-6 lg:grid-cols-2">
+                <IncomeExpenseChart transactions={transactions} days={30} />
+                <CategoryBarChart transactions={transactions} />
               </div>
-            ) : (
+
+              {signal180d && <RecurringSubscriptions signals={signal180d} />}
+
               <div className="space-y-4">
-                {recommendations.map((rec) => (
-                  <div key={rec.id} className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{rec.title}</h3>
-                      <p className="text-sm text-gray-600">{rec.description}</p>
+                <h2 className="text-xl font-semibold text-gray-900">Quick Overview</h2>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="rounded-xl border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Recent Transactions</h3>
+                    <p className="text-sm text-gray-600 mb-4">{transactions.length} total transactions</p>
+                    <Button onClick={() => setActiveView('transactions')} variant="outline">
+                      View All →
+                    </Button>
+                  </div>
+                  <div className="rounded-xl border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Your Accounts</h3>
+                    <p className="text-sm text-gray-600 mb-4">{accounts.length} connected accounts</p>
+                    <Button onClick={() => setActiveView('accounts')} variant="outline">
+                      Manage Accounts →
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-900">AI-Powered Insights</h2>
+                {recommendations.length === 0 ? (
+                  <div className="rounded-xl border border-gray-200 bg-white p-12 text-center space-y-6">
+                    <div className="mx-auto w-16 h-16 rounded-full border-2 border-gray-200 flex items-center justify-center">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
                     </div>
-
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Why this matters to you:</h4>
-                      <p className="text-sm text-gray-600">{rec.rationale}</p>
-                    </div>
-
-                    {rec.educationalContent && (
-                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                        <h4 className="text-sm font-medium text-blue-900 mb-2">Learn More:</h4>
-                        <p className="text-sm text-blue-800">{rec.educationalContent}</p>
-                      </div>
-                    )}
-
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Action steps:</h4>
-                      <ul className="space-y-2">
-                        {rec.actionItems.map((item, idx) => (
-                          <li key={idx} className="flex gap-2 text-sm text-gray-600">
-                            <span className="text-purple-600 mt-1">→</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="pt-4 border-t border-gray-200">
-                      <p className="text-xs text-gray-500 italic">
-                        {rec.disclaimer}
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-semibold text-gray-900">Get Personalized Insights</h3>
+                      <p className="text-sm text-gray-600 max-w-md mx-auto">
+                        {processing 
+                          ? 'Analyzing your financial data with AI... This may take a few minutes.' 
+                          : 'Click below to analyze your spending patterns and get AI-powered recommendations.'
+                        }
                       </p>
                     </div>
+                    {processing && (
+                      <div className="mx-auto w-64">
+                        <div className="h-1 rounded-full bg-gray-200 overflow-hidden">
+                          <div className="h-full w-1/2 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 animate-pulse" />
+                        </div>
+                      </div>
+                    )}
+                    <Button 
+                      onClick={handleProcessData} 
+                      disabled={processing}
+                      size="lg"
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {processing ? 'Processing... Please wait' : '💡 Generate Insights'}
+                    </Button>
                   </div>
+                ) : (
+                  <div className="space-y-4">
+                    {recommendations.slice(0, 2).map((rec) => (
+                      <div key={rec.id} className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{rec.title}</h3>
+                          <p className="text-sm text-gray-600">{rec.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {recommendations.length > 2 && (
+                      <p className="text-sm text-gray-600 text-center">
+                        And {recommendations.length - 2} more insights...
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Accounts View */}
+          {activeView === 'accounts' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Your Accounts</h2>
+                <p className="text-sm text-gray-600 mt-1">Manage all your connected financial accounts</p>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {accounts.map(account => (
+                  <AccountCard key={account.id} account={account} variant="default" />
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Transactions View */}
+          {activeView === 'transactions' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">All Transactions</h2>
+                <p className="text-sm text-gray-600 mt-1">View and search through all your transactions</p>
+              </div>
+              <TransactionTable transactions={transactions} />
+            </div>
+          )}
+
+          {/* Analytics View */}
+          {activeView === 'analytics' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Financial Analytics</h2>
+                <p className="text-sm text-gray-600 mt-1">Detailed insights into your spending patterns</p>
+              </div>
+              
+              <StatCards signals={signal180d} accounts={accounts} transactions={transactions} />
+              
+              <div className="grid gap-6 lg:grid-cols-2">
+                <IncomeExpenseChart transactions={transactions} days={30} />
+                <CategoryBarChart transactions={transactions} />
+              </div>
+
+              {signal180d && <RecurringSubscriptions signals={signal180d} />}
+            </div>
+          )}
+
+          {/* Cards View */}
+          {activeView === 'cards' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Credit Cards</h2>
+                <p className="text-sm text-gray-600 mt-1">Manage your credit cards and track utilization</p>
+              </div>
+              
+              {/* Credit utilization overview */}
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {accounts.filter(a => a.type === 'credit').map(account => (
+                  <AccountCard key={account.id} account={account} variant="default" />
+                ))}
+              </div>
+
+              {accounts.filter(a => a.type === 'credit').length === 0 && (
+                <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+                  <p className="text-gray-600">No credit cards connected</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Education View */}
+          {activeView === 'education' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Financial Education</h2>
+                <p className="text-sm text-gray-600 mt-1">Learn about personal finance and improve your financial literacy</p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
+                      <span className="text-2xl">💰</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">Budgeting Basics</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Learn how to create and maintain a budget that works for your lifestyle. Master the 50/30/20 rule and track your spending effectively.
+                  </p>
+                  <Button variant="outline" className="w-full">Read More →</Button>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
+                      <span className="text-2xl">💳</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">Credit Score Management</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Understand what affects your credit score and how to improve it. Learn about credit utilization, payment history, and credit mix.
+                  </p>
+                  <Button variant="outline" className="w-full">Read More →</Button>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                      <span className="text-2xl">📈</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">Investing 101</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Get started with investing basics. Learn about different investment types, risk management, and building a diversified portfolio.
+                  </p>
+                  <Button variant="outline" className="w-full">Read More →</Button>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-yellow-100">
+                      <span className="text-2xl">🛡️</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">Emergency Funds</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Discover why emergency funds are crucial and how much you should save. Learn strategies to build your safety net quickly.
+                  </p>
+                  <Button variant="outline" className="w-full">Read More →</Button>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-100">
+                      <span className="text-2xl">🏠</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">Home Buying Guide</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Navigate the home buying process with confidence. Learn about mortgages, down payments, and what to expect during closing.
+                  </p>
+                  <Button variant="outline" className="w-full">Read More →</Button>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100">
+                      <span className="text-2xl">🎓</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">Debt Management</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Learn effective strategies to pay down debt. Understand debt consolidation, the snowball vs avalanche methods, and staying debt-free.
+                  </p>
+                  <Button variant="outline" className="w-full">Read More →</Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
