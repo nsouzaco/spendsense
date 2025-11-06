@@ -19,7 +19,10 @@ export async function POST(
     const user = await storage.getUser(userId);
     if (!user) {
       return NextResponse.json(
-        createApiResponse(null, 'User not found'),
+        createApiResponse(undefined, {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }),
         { status: 404 }
       );
     }
@@ -27,7 +30,10 @@ export async function POST(
     // Check consent
     if (!user.consentStatus.active) {
       return NextResponse.json(
-        createApiResponse(null, 'User consent required'),
+        createApiResponse(undefined, {
+          code: 'CONSENT_REQUIRED',
+          message: 'User consent required'
+        }),
         { status: 403 }
       );
     }
@@ -44,11 +50,11 @@ export async function POST(
     // Build context for AI
     const totalBalance = accounts
       .filter(a => a.type === 'depository')
-      .reduce((sum, a) => sum + a.balance, 0);
+      .reduce((sum, a) => sum + a.currentBalance, 0);
     
     const creditCards = accounts.filter(a => a.subtype === 'credit card');
-    const totalCreditLimit = creditCards.reduce((sum, a) => sum + (a.limit || 0), 0);
-    const totalCreditUsed = creditCards.reduce((sum, a) => sum + Math.abs(a.balance), 0);
+    const totalCreditLimit = creditCards.reduce((sum, a) => sum + (a.creditLimit || 0), 0);
+    const totalCreditUsed = creditCards.reduce((sum, a) => sum + Math.abs(a.currentBalance), 0);
     const creditUtilization = totalCreditLimit > 0 ? (totalCreditUsed / totalCreditLimit) * 100 : 0;
     
     const recentTransactions = transactions
@@ -59,7 +65,7 @@ export async function POST(
     
     // Create personalized prompt
     const prompt = `
-Create a warm, personalized financial summary for ${user.name}.
+Create a warm, personalized financial summary for ${user.firstName}.
 
 THEIR FINANCIAL SNAPSHOT:
 - Total Balance: $${totalBalance.toFixed(2)}
