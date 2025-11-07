@@ -14,11 +14,9 @@ export function matchArticlesForUser(
   // If we have signals but no personas, match based on signals alone
   if (!signals) {
     // No data at all - show universal beginner content
+    const SAFE_CATEGORIES = new Set(['emergency_fund', 'budgeting']);
     return EDUCATION_ARTICLES
-      .filter(article => 
-        article.category === 'emergency_fund' || 
-        article.category === 'budgeting'
-      )
+      .filter(article => SAFE_CATEGORIES.has(article.category))
       .slice(0, 4)
       .map(article => ({
         article,
@@ -67,80 +65,91 @@ function calculateRelevanceScore(
 ): number {
   let score = 0;
 
-  // Base score: Does user's persona match article's recommended personas?
-  const hasMatchingPersona = article.recommendedFor.some(persona => 
-    userPersonas.includes(persona)
-  );
-  
+  // ✅ Treat empty/undefined recommendedFor as universal
+  const isUniversal = !article.recommendedFor || article.recommendedFor.length === 0;
+
+  const hasMatchingPersona = isUniversal
+    ? true
+    : article.recommendedFor.some(persona => userPersonas.includes(persona));
+
   if (!hasMatchingPersona) {
-    return 0; // Not relevant if persona doesn't match
+    // ❗ Don't hide universal content; hide only persona-targeted content that doesn't match
+    return 0;
   }
 
-  score += 0.5; // Base score for persona match
+  // Base score for persona match (or universal)
+  score += isUniversal ? 0.3 : 0.5;
 
-  // Check required signals - if article has specific requirements, user MUST meet them
+  // Step 2: Check required signals via a robust helper
   if (article.requiredSignals) {
-    const { requiredSignals } = article;
-
-    // Credit utilization requirements (FILTER OUT if not met)
-    if (requiredSignals.minCreditUtilization !== undefined) {
-      const avgUtilization = calculateAverageCreditUtilization(signals);
-      if (avgUtilization >= requiredSignals.minCreditUtilization) {
-        score += 0.3; // Strong match
-      } else {
-        return 0; // FILTER OUT - user doesn't have this problem
-      }
+    if (!meetsRequiredSignals(article.requiredSignals, signals)) {
+      // Hard gate ONLY when the article explicitly requires those signals
+      return 0;
     }
-
-    if (requiredSignals.maxCreditUtilization !== undefined) {
-      const avgUtilization = calculateAverageCreditUtilization(signals);
-      if (avgUtilization <= requiredSignals.maxCreditUtilization) {
-        score += 0.2;
-      } else {
-        return 0; // FILTER OUT - user exceeds this threshold
-      }
-    }
-
-    // Subscription requirement (FILTER OUT if not met)
-    if (requiredSignals.hasSubscriptions !== undefined) {
-      const hasMany = signals.subscriptionSignals.totalRecurringCount >= 5;
-      if (requiredSignals.hasSubscriptions && hasMany) {
-        score += 0.2;
-      } else if (requiredSignals.hasSubscriptions && !hasMany) {
-        return 0; // FILTER OUT - user doesn't have many subscriptions
-      }
-    }
-
-    // Savings requirement (be lenient here)
-    if (requiredSignals.hasSavings !== undefined) {
-      const hasSavings = signals.savingsSignals.currentSavingsBalance > 1000;
-      if (requiredSignals.hasSavings && hasSavings) {
-        score += 0.2;
-      } else if (requiredSignals.hasSavings && !hasSavings) {
-        score += 0.1; // Still show but lower priority
-      }
-    }
-
-    // Variable income requirement (FILTER OUT if not met)
-    if (requiredSignals.hasVariableIncome !== undefined) {
-      const hasVariable = !signals.incomeSignals.hasPayrollPattern;
-      if (requiredSignals.hasVariableIncome && hasVariable) {
-        score += 0.2;
-      } else if (requiredSignals.hasVariableIncome && !hasVariable) {
-        return 0; // FILTER OUT - user has steady income
-      }
-    }
-
-    // Income requirement
-    if (requiredSignals.maxIncome !== undefined) {
-      const annualIncome = signals.incomeSignals.estimatedAnnualIncome;
-      if (annualIncome <= requiredSignals.maxIncome) {
-        score += 0.15;
-      }
-    }
+    // If meets requirements, add weight
+    score += 0.3;
   }
 
   return Math.min(score, 1); // Cap at 1.0
+}
+
+/**
+ * Check if user meets all required signals for an article
+ * Returns true only if ALL requirements are met
+ */
+function meetsRequiredSignals(
+  requiredSignals: NonNullable<EducationArticle['requiredSignals']>,
+  signals: SignalResult
+): boolean {
+  // Credit utilization gate
+  if (typeof requiredSignals.minCreditUtilization === 'number') {
+    const utilization = getUserCreditUtilization(signals);
+    if (!(utilization >= requiredSignals.minCreditUtilization)) {
+      return false;
+    }
+  }
+
+  if (typeof requiredSignals.maxCreditUtilization === 'number') {
+    const utilization = getUserCreditUtilization(signals);
+    if (!(utilization <= requiredSignals.maxCreditUtilization)) {
+      return false;
+    }
+  }
+
+  // Subscriptions gate
+  if (requiredSignals.hasSubscriptions === true) {
+    const count = signals?.subscriptionSignals?.totalRecurringCount ?? 0;
+    if (!(count > 0)) {
+      return false;
+    }
+  }
+
+  // Variable income gate
+  if (requiredSignals.hasVariableIncome === true) {
+    const hasPayroll = signals?.incomeSignals?.hasPayrollPattern ?? false;
+    // Variable income = no steady payroll pattern
+    if (hasPayroll) {
+      return false;
+    }
+  }
+
+  // Savings gate
+  if (requiredSignals.hasSavings === true) {
+    const balance = signals?.savingsSignals?.currentSavingsBalance ?? 0;
+    if (!(balance > 0)) {
+      return false;
+    }
+  }
+
+  // Income gate
+  if (typeof requiredSignals.maxIncome === 'number') {
+    const annualIncome = signals?.incomeSignals?.estimatedAnnualIncome ?? Infinity;
+    if (!(annualIncome <= requiredSignals.maxIncome)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -184,11 +193,9 @@ function generateRecommendationReason(
   }
 
   // Signal-based reasons
-  if (signals.creditSignals.cards.length > 0) {
-    const avgUtil = calculateAverageCreditUtilization(signals);
-    if (avgUtil > 0.7 && article.category === 'debt_payoff') {
-      reasons.push('High credit utilization detected');
-    }
+  const avgUtil = getUserCreditUtilization(signals);
+  if (avgUtil > 0.7 && article.category === 'debt_payoff') {
+    reasons.push('High credit utilization detected');
   }
 
   if (signals.savingsSignals.currentSavingsBalance > 5000 && article.category === 'investing') {
@@ -205,76 +212,16 @@ function calculateSignalBasedRelevance(
   article: EducationArticle,
   signals: SignalResult
 ): number {
-  let score = 0;
-
-  // Check if article's required signals match user's actual signals
+  // Use the same robust signal checking
   if (article.requiredSignals) {
-    const { requiredSignals } = article;
-
-    // Credit utilization check
-    if (requiredSignals.minCreditUtilization !== undefined || requiredSignals.maxCreditUtilization !== undefined) {
-      const avgUtilization = calculateAverageCreditUtilization(signals);
-      
-      // Only match if user meets the criteria
-      if (requiredSignals.minCreditUtilization !== undefined) {
-        if (avgUtilization >= requiredSignals.minCreditUtilization) {
-          score += 0.6; // Strong match
-        } else {
-          return 0; // User doesn't have this issue - don't recommend
-        }
-      }
-      
-      if (requiredSignals.maxCreditUtilization !== undefined) {
-        if (avgUtilization <= requiredSignals.maxCreditUtilization) {
-          score += 0.4;
-        }
-      }
+    if (!meetsRequiredSignals(article.requiredSignals, signals)) {
+      return 0; // Hard gate - user doesn't meet requirements
     }
-
-    // Subscription check
-    if (requiredSignals.hasSubscriptions !== undefined) {
-      const hasMany = signals.subscriptionSignals.totalRecurringCount >= 5;
-      if (requiredSignals.hasSubscriptions && hasMany) {
-        score += 0.6;
-      } else if (requiredSignals.hasSubscriptions && !hasMany) {
-        return 0; // User doesn't have many subscriptions
-      }
-    }
-
-    // Savings check
-    if (requiredSignals.hasSavings !== undefined) {
-      const hasSavings = signals.savingsSignals.currentSavingsBalance > 1000;
-      if (requiredSignals.hasSavings && hasSavings) {
-        score += 0.5;
-      } else if (requiredSignals.hasSavings && !hasSavings) {
-        // Still show but lower score
-        score += 0.2;
-      }
-    }
-
-    // Variable income check
-    if (requiredSignals.hasVariableIncome !== undefined) {
-      const hasVariable = !signals.incomeSignals.hasPayrollPattern;
-      if (requiredSignals.hasVariableIncome && hasVariable) {
-        score += 0.6;
-      } else if (requiredSignals.hasVariableIncome && !hasVariable) {
-        return 0; // User has steady income
-      }
-    }
-
-    // Income check
-    if (requiredSignals.maxIncome !== undefined) {
-      const annualIncome = signals.incomeSignals.estimatedAnnualIncome;
-      if (annualIncome <= requiredSignals.maxIncome) {
-        score += 0.4;
-      }
-    }
-  } else {
-    // No required signals - article is universally relevant
-    score = 0.5;
+    return 0.7; // Strong relevance if requirements are met
   }
-
-  return Math.min(score, 1);
+  
+  // No required signals - article is universally relevant
+  return 0.5;
 }
 
 /**
@@ -295,7 +242,7 @@ function generateSignalBasedReason(
 
   // Debt/credit articles
   if (article.category === 'debt_payoff' || article.category === 'credit_management') {
-    const avgUtil = calculateAverageCreditUtilization(signals);
+    const avgUtil = getUserCreditUtilization(signals);
     if (avgUtil > 0.3) {
       return `Your credit utilization is ${(avgUtil * 100).toFixed(0)}% - reduce it to improve your score`;
     }
@@ -331,20 +278,40 @@ function generateSignalBasedReason(
 }
 
 /**
- * Helper: Calculate average credit utilization across all cards
+ * Get user's credit utilization - robust calculation
+ * Prefers persisted averageUtilization if valid, otherwise computes from cards
  */
-function calculateAverageCreditUtilization(signals: SignalResult): number {
-  if (signals.creditSignals.cards.length === 0) return 0;
-  
+function getUserCreditUtilization(signals: SignalResult): number {
+  // First, try to use the persisted average from signals
+  const avg = signals?.creditSignals?.averageUtilization;
+  if (typeof avg === 'number' && Number.isFinite(avg) && avg >= 0) {
+    return avg; // e.g., 0.8 for 80% utilization
+  }
+
+  // Fallback: calculate from individual cards
+  const cards = signals?.creditSignals?.cards || [];
+  if (!Array.isArray(cards) || cards.length === 0) {
+    return 0;
+  }
+
   let totalLimit = 0;
   let totalUsed = 0;
 
-  for (const card of signals.creditSignals.cards) {
-    totalLimit += card.limit;
-    totalUsed += card.balance;
+  for (const card of cards) {
+    const limit = Number(card?.limit) || 0;
+    const balance = Number(card?.balance) || 0;
+    totalLimit += limit;
+    totalUsed += balance;
   }
 
   return totalLimit > 0 ? totalUsed / totalLimit : 0;
+}
+
+/**
+ * @deprecated Use getUserCreditUtilization instead
+ */
+function calculateAverageCreditUtilization(signals: SignalResult): number {
+  return getUserCreditUtilization(signals);
 }
 
 /**
