@@ -1,49 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStorage } from '@/lib/storage';
-import { detectSignals } from '@/lib/signals';
-import { assignPersonas } from '@/lib/personas';
 import { generateRecommendations } from '@/lib/recommendations';
 import { applyGuardrails } from '@/lib/guardrails';
 import { createApiResponse, handleApiError } from '@/lib/api/middleware';
-import type { TimeWindow } from '@/types';
 
+/**
+ * POST /api/process
+ * Generates AI recommendations for users with consent
+ * 
+ * NOTE: This endpoint assumes signals and personas are already calculated
+ * and saved in the database. Run `npm run calculate-profiles` first.
+ */
 export async function POST(request: NextRequest) {
   try {
     const storage = getStorage();
     const users = await storage.getAllUsers();
     
     let processedCount = 0;
+    let skippedCount = 0;
     let errors = 0;
     
     for (const user of users) {
       try {
-        if (!user.consentStatus.active) continue;
-        
-        const accounts = await storage.getUserAccounts(user.id);
-        const transactions = await storage.getUserTransactions(user.id);
-        const liabilities = await storage.getUserLiabilities(user.id);
-        
-        // Detect signals for both windows
-        const windows: TimeWindow[] = ['30d', '180d'];
-        for (const window of windows) {
-          const signals = detectSignals(user, accounts, transactions, liabilities, window);
-          await storage.saveSignals(signals);
+        // Skip users without active consent
+        if (!user.consentStatus.active) {
+          skippedCount++;
+          continue;
         }
         
-        // Get 180d signals for persona assignment
+        // Get pre-calculated signals and personas from database
         const allSignals = await storage.getUserSignals(user.id);
         const signals180d = allSignals.find(s => s.window === '180d');
-        if (!signals180d) continue;
         
-        // Assign personas
-        const personas = assignPersonas(user.id, signals180d);
-        if (personas.length === 0) continue;
-        
-        for (const persona of personas) {
-          await storage.savePersona(persona);
+        if (!signals180d) {
+          console.warn(`No signals found for user ${user.id}. Run calculate-profiles script.`);
+          skippedCount++;
+          continue;
         }
         
-        // Generate recommendations
+        const personas = await storage.getUserPersonas(user.id);
+        
+        if (personas.length === 0) {
+          console.warn(`No personas found for user ${user.id}. Run calculate-profiles script.`);
+          skippedCount++;
+          continue;
+        }
+        
+        // Check if recommendations already exist
+        const existingRecs = await storage.getUserRecommendations(user.id);
+        if (existingRecs.length > 0) {
+          console.log(`User ${user.id} already has recommendations, skipping...`);
+          skippedCount++;
+          continue;
+        }
+        
+        // Generate AI-powered recommendations
         const recommendations = await generateRecommendations(user, signals180d, personas, 5);
         
         // Apply guardrails and save
@@ -64,8 +75,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       createApiResponse({
         processed: processedCount,
+        skipped: skippedCount,
         total: users.length,
         errors,
+        message: processedCount > 0 
+          ? `Generated recommendations for ${processedCount} users`
+          : 'No new recommendations generated. Users may already have recommendations or missing profiles.',
       })
     );
   } catch (error) {
