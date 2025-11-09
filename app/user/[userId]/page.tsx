@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Gift } from 'lucide-react';
 import type { User, SignalResult, Recommendation, Account, Transaction, PersonaAssignment, EducationArticle } from '@/types';
 
 // Import new components
@@ -33,7 +34,8 @@ export default function UserDashboard() {
   const [summary, setSummary] = useState<string | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<EducationArticle | null>(null);
   const [articleModalOpen, setArticleModalOpen] = useState(false);
-  const [activeView, setActiveView] = useState<'dashboard' | 'accounts' | 'transactions' | 'analytics' | 'cards' | 'education'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'accounts' | 'transactions' | 'analytics' | 'cards' | 'education' | 'offers'>('dashboard');
+  const [offers, setOffers] = useState<any[]>([]);
 
   useEffect(() => {
     loadUserData();
@@ -78,6 +80,11 @@ export default function UserDashboard() {
         setPrimaryPersona(personaData.data.primaryPersona);
         setPersonas(personaData.data.personas || []);
       }
+
+      // Load offers
+      const offersRes = await fetch(`/api/users/${userId}/offers`);
+      const offersData = await offersRes.json();
+      if (offersData.success) setOffers(offersData.data || []);
 
       setLoading(false);
     } catch (error) {
@@ -439,6 +446,105 @@ export default function UserDashboard() {
               ) : (
                 <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
                   <p className="text-gray-600">No personalized articles available yet. Complete your financial profile to see recommendations.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Offers View */}
+          {activeView === 'offers' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Your Offers</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {offers.length > 0 
+                    ? `You have ${offers.length} offer${offers.length !== 1 ? 's' : ''} available` 
+                    : 'Check back for personalized offers from our partners'
+                  }
+                </p>
+              </div>
+
+              {offers.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2">
+                  {offers.map((offer) => {
+                    // Determine color scheme based on category
+                    const colorSchemes: Record<string, string> = {
+                      credit: 'border-purple-200 bg-purple-50',
+                      savings: 'border-green-200 bg-green-50',
+                      loan: 'border-blue-200 bg-blue-50',
+                      subscription: 'border-orange-200 bg-orange-50',
+                      tool: 'border-yellow-200 bg-yellow-50',
+                      assistance: 'border-indigo-200 bg-indigo-50',
+                    };
+                    
+                    const iconMap: Record<string, string> = {
+                      credit: '💳',
+                      savings: '📈',
+                      loan: '🏦',
+                      subscription: '📱',
+                      tool: '🔧',
+                      assistance: '📚',
+                    };
+                    
+                    const colorScheme = colorSchemes[offer.category] || 'border-gray-200 bg-gray-50';
+                    const icon = iconMap[offer.category] || '🎁';
+                    
+                    return (
+                      <div key={offer.id} className={`rounded-xl border ${colorScheme} p-6 space-y-4 hover:shadow-md transition-shadow`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white flex-shrink-0">
+                              <span className="text-2xl">{icon}</span>
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-gray-900">{offer.title}</h3>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {new Date(offer.sentAt).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                          {offer.status === 'sent' && (
+                            <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 border border-blue-200">
+                              New
+                            </span>
+                          )}
+                        </div>
+                        
+                        <p className="text-sm text-gray-700">
+                          {offer.description}
+                        </p>
+                        
+                        <div className="flex items-center gap-2 pt-2">
+                          <Button 
+                            variant="outline" 
+                            className="flex-1 hover:bg-white"
+                            onClick={() => {
+                              // Mark as viewed (you could add API call here)
+                              console.log('Viewing offer:', offer.id);
+                            }}
+                          >
+                            Learn More →
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-gray-200 bg-white p-12 text-center space-y-4">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Gift className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">No Offers Yet</h3>
+                    <p className="text-sm text-gray-600">
+                      We'll notify you when personalized offers become available based on your financial profile.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

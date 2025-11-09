@@ -10,14 +10,15 @@ import {
   Settings, 
   LogOut,
   Wallet,
-  BookOpen
+  BookOpen,
+  Gift
 } from 'lucide-react';
 
 interface SidebarProps {
   userId: string;
   userName: string;
   activeView: string;
-  onViewChange: (view: 'dashboard' | 'accounts' | 'transactions' | 'analytics' | 'cards' | 'education') => void;
+  onViewChange: (view: 'dashboard' | 'accounts' | 'transactions' | 'analytics' | 'cards' | 'education' | 'offers') => void;
 }
 
 export function Sidebar({ userId, userName, activeView, onViewChange }: SidebarProps) {
@@ -59,6 +60,11 @@ export function Sidebar({ userId, userName, activeView, onViewChange }: SidebarP
       name: 'Education',
       icon: BookOpen,
       view: 'education' as const,
+    },
+    {
+      name: 'Offers',
+      icon: Gift,
+      view: 'offers' as const,
     },
   ];
 

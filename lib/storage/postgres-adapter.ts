@@ -12,6 +12,7 @@ import type {
   SystemMetrics,
   FilterParams,
   SearchParams,
+  Offer,
 } from '@/types';
 import type { StorageAdapter } from './interface';
 
@@ -288,6 +289,63 @@ export class PostgresStorageAdapter implements StorageAdapter {
     }
   }
 
+  // Offer operations
+  async getUserOffers(userId: string): Promise<Offer[]> {
+    const result = await sql`
+      SELECT * FROM offers 
+      WHERE user_id = ${userId}
+      ORDER BY sent_at DESC
+    `;
+    return result.rows.map(row => this.parseOffer(row));
+  }
+
+  async getOffer(offerId: string): Promise<Offer | null> {
+    const result = await sql`SELECT * FROM offers WHERE id = ${offerId}`;
+    return result.rows[0] ? this.parseOffer(result.rows[0]) : null;
+  }
+
+  async saveOffer(offer: Offer): Promise<void> {
+    await sql`
+      INSERT INTO offers (
+        id, user_id, offer_id, title, description, category,
+        sent_by, sent_at, status, viewed_at, responded_at
+      ) VALUES (
+        ${offer.id}, ${offer.userId}, ${offer.offerId}, ${offer.title},
+        ${offer.description}, ${offer.category}, ${offer.sentBy}, ${offer.sentAt},
+        ${offer.status}, ${offer.viewedAt || null}, ${offer.respondedAt || null}
+      )
+      ON CONFLICT (id) DO UPDATE SET
+        status = ${offer.status},
+        viewed_at = ${offer.viewedAt || null},
+        responded_at = ${offer.respondedAt || null}
+    `;
+  }
+
+  async updateOffer(offerId: string, updates: Partial<Offer>): Promise<void> {
+    const setClauses: string[] = [];
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (updates.status !== undefined) {
+      setClauses.push(`status = $${paramIndex++}`);
+      params.push(updates.status);
+    }
+    if (updates.viewedAt !== undefined) {
+      setClauses.push(`viewed_at = $${paramIndex++}`);
+      params.push(updates.viewedAt);
+    }
+    if (updates.respondedAt !== undefined) {
+      setClauses.push(`responded_at = $${paramIndex++}`);
+      params.push(updates.respondedAt);
+    }
+
+    if (setClauses.length > 0) {
+      const query = `UPDATE offers SET ${setClauses.join(', ')} WHERE id = $${paramIndex}`;
+      params.push(offerId);
+      await sql.query(query, params);
+    }
+  }
+
   // Helper parsers
   private parseUser(row: any): User {
     return {
@@ -349,6 +407,22 @@ export class PostgresStorageAdapter implements StorageAdapter {
       accountId: row.account_id,
       type: row.type,
       details: JSON.parse(row.details),
+    };
+  }
+
+  private parseOffer(row: any): Offer {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      offerId: row.offer_id,
+      title: row.title,
+      description: row.description,
+      category: row.category,
+      sentBy: row.sent_by,
+      sentAt: row.sent_at,
+      status: row.status,
+      viewedAt: row.viewed_at,
+      respondedAt: row.responded_at,
     };
   }
 }

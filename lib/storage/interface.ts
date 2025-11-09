@@ -11,6 +11,7 @@ import type {
   SystemMetrics,
   FilterParams,
   SearchParams,
+  Offer,
 } from '@/types';
 
 export interface StorageAdapter {
@@ -53,6 +54,12 @@ export interface StorageAdapter {
   // Operator operations
   saveOperatorAction(action: OperatorAction): Promise<void>;
   getOperatorActions(limit?: number): Promise<OperatorAction[]>;
+
+  // Offer operations
+  getUserOffers(userId: string): Promise<Offer[]>;
+  getOffer(offerId: string): Promise<Offer | null>;
+  saveOffer(offer: Offer): Promise<void>;
+  updateOffer(offerId: string, updates: Partial<Offer>): Promise<void>;
 
   // Metrics
   getSystemMetrics(): Promise<SystemMetrics>;

@@ -10,4 +10,5 @@ export * from './consent';
 export * from './api';
 export * from './operator';
 export * from './education';
+export * from './offer';
 

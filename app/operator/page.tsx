@@ -13,6 +13,8 @@ export default function OperatorDashboard() {
   const [analyzing, setAnalyzing] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showOfferSentModal, setShowOfferSentModal] = useState(false);
+  const [sentOffers, setSentOffers] = useState<Record<string, Set<string>>>({});
 
   useEffect(() => {
     loadData();
@@ -83,6 +85,52 @@ export default function OperatorDashboard() {
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  const handleSendOffer = async (offerId: string, title: string, description: string, category: string) => {
+    if (!selectedUser) return;
+
+    try {
+      const res = await fetch(`/api/users/${selectedUser.id}/offers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          offerId,
+          title,
+          description,
+          category,
+          sentBy: 'admin', // operator ID
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        // Track sent offer
+        setSentOffers(prev => {
+          const userOffers = prev[selectedUser.id] || new Set();
+          userOffers.add(offerId);
+          return { ...prev, [selectedUser.id]: userOffers };
+        });
+        
+        // Show success modal
+        setShowOfferSentModal(true);
+        
+        // Auto-close modal after 2 seconds
+        setTimeout(() => {
+          setShowOfferSentModal(false);
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error sending offer:', error);
+      alert('Failed to send offer. Please try again.');
+    }
+  };
+
+  const isOfferSent = (offerId: string) => {
+    if (!selectedUser) return false;
+    return sentOffers[selectedUser.id]?.has(offerId) || false;
   };
 
   const filteredUsers = users.filter(user => 
@@ -433,10 +481,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Great for users with good credit and savings</p>
                           </div>
                           <button
-                            onClick={() => alert('Credit card offer sent to user!')}
-                            className="rounded-lg border border-green-500/30 bg-green-500/20 px-4 py-2 text-xs font-light tracking-tight text-green-200 backdrop-blur-sm transition-colors hover:bg-green-500/30"
+                            onClick={() => handleSendOffer('credit-card-premium', 'Premium Rewards Credit Card', 'Great for users with good credit and savings', 'credit')}
+                            disabled={isOfferSent('credit-card-premium')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('credit-card-premium')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-green-500/30 bg-green-500/20 text-green-200 hover:bg-green-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('credit-card-premium') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                         <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
@@ -445,10 +498,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Maximize savings with better interest rates</p>
                           </div>
                           <button
-                            onClick={() => alert('Savings account offer sent to user!')}
-                            className="rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-2 text-xs font-light tracking-tight text-blue-200 backdrop-blur-sm transition-colors hover:bg-blue-500/30"
+                            onClick={() => handleSendOffer('savings-high-yield', 'High-Yield Savings Account', 'Maximize savings with better interest rates', 'savings')}
+                            disabled={isOfferSent('savings-high-yield')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('savings-high-yield')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-blue-500/30 bg-blue-500/20 text-blue-200 hover:bg-blue-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('savings-high-yield') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                       </>
@@ -462,10 +520,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Lower interest rate, single payment</p>
                           </div>
                           <button
-                            onClick={() => alert('Debt consolidation offer sent to user!')}
-                            className="rounded-lg border border-red-500/30 bg-red-500/20 px-4 py-2 text-xs font-light tracking-tight text-red-200 backdrop-blur-sm transition-colors hover:bg-red-500/30"
+                            onClick={() => handleSendOffer('debt-consolidation', 'Debt Consolidation Loan', 'Lower interest rate, single payment', 'loan')}
+                            disabled={isOfferSent('debt-consolidation')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('debt-consolidation')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-red-500/30 bg-red-500/20 text-red-200 hover:bg-red-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('debt-consolidation') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                         <div className="flex items-center justify-between rounded-lg border border-orange-500/30 bg-orange-500/10 p-3">
@@ -474,10 +537,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Move high-interest debt, save on interest</p>
                           </div>
                           <button
-                            onClick={() => alert('Balance transfer card offer sent to user!')}
-                            className="rounded-lg border border-orange-500/30 bg-orange-500/20 px-4 py-2 text-xs font-light tracking-tight text-orange-200 backdrop-blur-sm transition-colors hover:bg-orange-500/30"
+                            onClick={() => handleSendOffer('balance-transfer', 'Balance Transfer Card (0% APR)', 'Move high-interest debt, save on interest', 'credit')}
+                            disabled={isOfferSent('balance-transfer')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('balance-transfer')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-orange-500/30 bg-orange-500/20 text-orange-200 hover:bg-orange-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('balance-transfer') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                       </>
@@ -491,10 +559,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Tools to manage irregular income</p>
                           </div>
                           <button
-                            onClick={() => alert('Income smoothing program sent to user!')}
-                            className="rounded-lg border border-yellow-500/30 bg-yellow-500/20 px-4 py-2 text-xs font-light tracking-tight text-yellow-200 backdrop-blur-sm transition-colors hover:bg-yellow-500/30"
+                            onClick={() => handleSendOffer('income-smoothing', 'Income Smoothing Program', 'Tools to manage irregular income', 'tool')}
+                            disabled={isOfferSent('income-smoothing')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('income-smoothing')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-yellow-500/30 bg-yellow-500/20 text-yellow-200 hover:bg-yellow-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('income-smoothing') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                         <div className="flex items-center justify-between rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
@@ -503,10 +576,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Flexible access to funds during low-income periods</p>
                           </div>
                           <button
-                            onClick={() => alert('Line of credit offer sent to user!')}
-                            className="rounded-lg border border-yellow-500/30 bg-yellow-500/20 px-4 py-2 text-xs font-light tracking-tight text-yellow-200 backdrop-blur-sm transition-colors hover:bg-yellow-500/30"
+                            onClick={() => handleSendOffer('line-of-credit', 'Line of Credit', 'Flexible access to funds during low-income periods', 'loan')}
+                            disabled={isOfferSent('line-of-credit')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('line-of-credit')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-yellow-500/30 bg-yellow-500/20 text-yellow-200 hover:bg-yellow-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('line-of-credit') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                       </>
@@ -520,10 +598,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Track and cancel unwanted subscriptions</p>
                           </div>
                           <button
-                            onClick={() => alert('Subscription management tool sent to user!')}
-                            className="rounded-lg border border-purple-500/30 bg-purple-500/20 px-4 py-2 text-xs font-light tracking-tight text-purple-200 backdrop-blur-sm transition-colors hover:bg-purple-500/30"
+                            onClick={() => handleSendOffer('subscription-tool', 'Subscription Management Tool', 'Track and cancel unwanted subscriptions', 'tool')}
+                            disabled={isOfferSent('subscription-tool')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('subscription-tool')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-purple-500/30 bg-purple-500/20 text-purple-200 hover:bg-purple-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('subscription-tool') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                         <div className="flex items-center justify-between rounded-lg border border-purple-500/30 bg-purple-500/10 p-3">
@@ -532,10 +615,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Earn rewards on your subscriptions</p>
                           </div>
                           <button
-                            onClick={() => alert('Cashback card offer sent to user!')}
-                            className="rounded-lg border border-purple-500/30 bg-purple-500/20 px-4 py-2 text-xs font-light tracking-tight text-purple-200 backdrop-blur-sm transition-colors hover:bg-purple-500/30"
+                            onClick={() => handleSendOffer('cashback-card', 'Cashback Card (Recurring Purchases)', 'Earn rewards on your subscriptions', 'credit')}
+                            disabled={isOfferSent('cashback-card')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('cashback-card')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-purple-500/30 bg-purple-500/20 text-purple-200 hover:bg-purple-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('cashback-card') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                       </>
@@ -549,10 +637,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Start building savings with small amounts</p>
                           </div>
                           <button
-                            onClick={() => alert('Micro-savings program sent to user!')}
-                            className="rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-2 text-xs font-light tracking-tight text-blue-200 backdrop-blur-sm transition-colors hover:bg-blue-500/30"
+                            onClick={() => handleSendOffer('micro-savings', 'Micro-Savings Program', 'Start building savings with small amounts', 'savings')}
+                            disabled={isOfferSent('micro-savings')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('micro-savings')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-blue-500/30 bg-blue-500/20 text-blue-200 hover:bg-blue-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('micro-savings') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                         <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
@@ -561,10 +654,15 @@ export default function OperatorDashboard() {
                             <p className="text-xs font-light tracking-tight text-white/50">Access programs and support services</p>
                           </div>
                           <button
-                            onClick={() => alert('Financial assistance resources sent to user!')}
-                            className="rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-2 text-xs font-light tracking-tight text-blue-200 backdrop-blur-sm transition-colors hover:bg-blue-500/30"
+                            onClick={() => handleSendOffer('financial-assistance', 'Financial Assistance Resources', 'Access programs and support services', 'assistance')}
+                            disabled={isOfferSent('financial-assistance')}
+                            className={`rounded-lg border px-4 py-2 text-xs font-light tracking-tight backdrop-blur-sm transition-colors ${
+                              isOfferSent('financial-assistance')
+                                ? 'border-gray-500/30 bg-gray-500/20 text-gray-400 cursor-not-allowed'
+                                : 'border-blue-500/30 bg-blue-500/20 text-blue-200 hover:bg-blue-500/30'
+                            }`}
                           >
-                            Send Offer
+                            {isOfferSent('financial-assistance') ? '✓ Offer Sent' : 'Send Offer'}
                           </button>
                         </div>
                       </>
@@ -595,6 +693,32 @@ export default function OperatorDashboard() {
                 >
                   View Full Dashboard
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Offer Sent Success Modal */}
+        {showOfferSentModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="relative w-full max-w-md mx-4 rounded-2xl border border-green-500/30 bg-gradient-to-br from-green-900/90 via-gray-900/90 to-black/90 p-8 backdrop-blur-xl animate-in fade-in zoom-in duration-200">
+              {/* Success Icon */}
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-green-500/20 border-2 border-green-500/50 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Message */}
+              <div className="text-center">
+                <h3 className="text-2xl font-light tracking-tight text-white mb-2">
+                  Offer Sent Successfully!
+                </h3>
+                <p className="text-sm font-light tracking-tight text-white/60">
+                  The offer has been sent to {selectedUser?.firstName} and will appear in their offers section.
+                </p>
               </div>
             </div>
           </div>

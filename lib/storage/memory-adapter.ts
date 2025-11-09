@@ -11,6 +11,7 @@ import type {
   SystemMetrics,
   FilterParams,
   SearchParams,
+  Offer,
 } from '@/types';
 import type { StorageAdapter } from './interface';
 
@@ -24,6 +25,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
   private recommendations: Map<string, Recommendation> = new Map();
   private consents: Map<string, Consent> = new Map();
   private operatorActions: OperatorAction[] = [];
+  private offers: Map<string, Offer> = new Map();
 
   // Indexes for faster lookups
   private accountsByUser: Map<string, string[]> = new Map();
@@ -31,6 +33,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
   private transactionsByAccount: Map<string, string[]> = new Map();
   private liabilitiesByUser: Map<string, string[]> = new Map();
   private recommendationsByUser: Map<string, string[]> = new Map();
+  private offersByUser: Map<string, string[]> = new Map();
 
   constructor(data?: {
     users: User[];
@@ -327,6 +330,38 @@ export class MemoryStorageAdapter implements StorageAdapter {
       errorCount: 0,
       lastUpdated: new Date().toISOString(),
     };
+  }
+
+  // Offer operations
+  async getUserOffers(userId: string): Promise<Offer[]> {
+    const offerIds = this.offersByUser.get(userId) || [];
+    return offerIds
+      .map(id => this.offers.get(id))
+      .filter((offer): offer is Offer => offer !== undefined)
+      .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+  }
+
+  async getOffer(offerId: string): Promise<Offer | null> {
+    return this.offers.get(offerId) || null;
+  }
+
+  async saveOffer(offer: Offer): Promise<void> {
+    this.offers.set(offer.id, offer);
+    
+    // Update index
+    if (!this.offersByUser.has(offer.userId)) {
+      this.offersByUser.set(offer.userId, []);
+    }
+    if (!this.offersByUser.get(offer.userId)!.includes(offer.id)) {
+      this.offersByUser.get(offer.userId)!.push(offer.id);
+    }
+  }
+
+  async updateOffer(offerId: string, updates: Partial<Offer>): Promise<void> {
+    const offer = this.offers.get(offerId);
+    if (offer) {
+      this.offers.set(offerId, { ...offer, ...updates });
+    }
   }
 
   // Bulk operations
