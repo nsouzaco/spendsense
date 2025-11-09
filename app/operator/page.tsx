@@ -32,31 +32,6 @@ export default function OperatorDashboard() {
       const metricsData = await metricsRes.json();
       if (metricsData.success) {
         setMetrics(metricsData.data);
-        
-        // If no personas exist, automatically analyze all users
-        if (metricsData.data.usersWithPersona === 0 && metricsData.data.totalUsers > 0) {
-          console.log('🔍 No personas found, automatically analyzing all users...');
-          setAnalyzing(true);
-          
-          try {
-            const analyzeRes = await fetch('/api/operator/analyze-all', { method: 'POST' });
-            const analyzeData = await analyzeRes.json();
-            
-            if (analyzeData.success) {
-              console.log('✅ Auto-analysis complete, reloading metrics...');
-              // Reload metrics after analysis
-              const updatedMetricsRes = await fetch('/api/operator/metrics');
-              const updatedMetricsData = await updatedMetricsRes.json();
-              if (updatedMetricsData.success) {
-                setMetrics(updatedMetricsData.data);
-              }
-            }
-          } catch (error) {
-            console.error('Error during auto-analysis:', error);
-          } finally {
-            setAnalyzing(false);
-          }
-        }
       }
 
       setLoading(false);
@@ -179,18 +154,6 @@ export default function OperatorDashboard() {
         {/* Metrics Overview */}
         {metrics && (
           <>
-            {metrics && metrics.totalUsers > metrics.usersWithPersona && (
-              <div className="flex justify-end">
-                <button
-                  onClick={handleAnalyzeAll}
-                  disabled={analyzing}
-                  className="rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm font-light tracking-tight text-purple-700 transition-colors hover:bg-purple-500/20 disabled:opacity-50"
-                >
-                  {analyzing ? 'Analyzing...' : `🔍 Analyze ${metrics.totalUsers - metrics.usersWithPersona} Users`}
-                </button>
-              </div>
-            )}
-            
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               {/* Total Users */}
               <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">

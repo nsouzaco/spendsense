@@ -38,10 +38,17 @@ export async function GET(request: NextRequest) {
       const signals = await storage.getUserSignals(user.id);
       const recommendations = await storage.getUserRecommendations(user.id);
       
+      // Find primary persona (lowest priority number = highest priority)
+      const primaryPersona = personas.length > 0 
+        ? personas.reduce((prev, current) => 
+            (prev.priority < current.priority) ? prev : current
+          )
+        : null;
+      
       return {
         ...user,
         personaCount: personas.length,
-        primaryPersona: personas[0]?.personaType || null,
+        primaryPersona: primaryPersona?.personaType || null,
         signalCount: signals.length,
         recommendationCount: recommendations.length,
       };

@@ -8,15 +8,16 @@
 │  ┌──────────────────────┐      ┌───────────────────────┐   │
 │  │  User Dashboard      │      │  Operator Dashboard   │   │
 │  │  - Persona Display   │      │  - User Search        │   │
-│  │  - Recommendations   │      │  - Signal Review      │   │
-│  │  - Consent Control   │      │  - Bulk Actions       │   │
+│  │  - Recommendations   │      │  - Send Offers        │   │
+│  │  - Offers View       │      │  - Success Modal      │   │
+│  │  - Consent Control   │      │  - User Profiles      │   │
 │  └──────────────────────┘      └───────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                       API Layer (Next.js)                    │
-│  /api/auth  /api/users  /api/recommendations  /api/operator │
+│ /api/auth  /api/users  /api/offers  /api/operator          │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -56,7 +57,23 @@
 
 ## Core Data Flow
 
-### 1. Data Ingestion & Signal Detection
+### 1. Data Generation & Pre-calculation (NEW - Nov 9, 2025)
+
+```
+Synthetic Data Generator → Signal Detection → Persona Assignment → JSON File
+                                    │                    │
+                                    ├─→ 30d Signals     ├─→ Primary Persona
+                                    └─→ 180d Signals    └─→ All Personas
+```
+
+**Pattern**: Pre-calculated data architecture
+- Signals and personas calculated ONCE during data generation
+- Saved to `synthetic-users.json` alongside users/transactions
+- Memory adapter loads pre-calculated data on startup
+- No runtime signal detection or persona assignment needed
+- Immediate display in operator dashboard (no auto-analysis)
+
+### 2. Data Ingestion (Old Pattern - Still Available)
 
 ```
 Synthetic Data → Storage → Signal Detection (30d & 180d windows)
@@ -71,8 +88,10 @@ Synthetic Data → Storage → Signal Detection (30d & 180d windows)
 - Each signal calculator is isolated and testable
 - Signals computed in parallel where possible
 - Results stored with time window metadata
+- Use `npm run generate-data` for basic generation
+- Use `npm run generate-data-full` for pre-calculated personas
 
-### 2. Persona Assignment
+### 3. Persona Assignment
 
 ```
 Detected Signals → Persona Criteria Matching → Prioritization → Assignment
@@ -82,9 +101,11 @@ Detected Signals → Persona Criteria Matching → Prioritization → Assignment
 - Each persona has clear, documented criteria
 - Multiple personas can match
 - Priority order: High Utilization → Variable Income → Subscription → Savings → Low Income
+- **Primary Persona**: Determined by lowest priority number (highest priority)
 - Assignment includes rationale for auditability
+- **Pre-calculated during data generation** (recommended)
 
-### 3. Recommendation Generation
+### 4. Recommendation Generation
 
 ```
 Assigned Persona + Signals → Recommendation Engine → Guardrails → Storage
@@ -100,7 +121,25 @@ Assigned Persona + Signals → Recommendation Engine → Guardrails → Storage
 - Guardrails validate before storage
 - Decision trace logged for auditability
 
-### 4. User Summary Generation (On-Demand)
+### 5. Offers System (NEW - Nov 9, 2025)
+
+```
+Operator Dashboard → Send Offer → API → Storage → User Dashboard
+                         │                             │
+                         ├─→ Success Modal            ├─→ Offers Section
+                         └─→ Button State Update      └─→ Category Cards
+```
+
+**Pattern**: Direct operator-to-user communication
+- Operators send personalized offers from user profile modal
+- Offers categorized: credit, savings, loan, tool, subscription, assistance
+- Beautiful success modal with auto-close (2 seconds)
+- Button state management (Send Offer → ✓ Offer Sent)
+- User sees offers in dedicated "Offers" section with Gift icon
+- Category-based color schemes and icons
+- Persistent tracking (offers saved to database)
+
+### 6. User Summary Generation (On-Demand)
 
 ```
 User Data (accounts, transactions, signals, personas, recommendations)

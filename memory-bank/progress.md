@@ -1,6 +1,6 @@
 # Progress Tracking
 
-## Completed ✅ (16/16) - 100% COMPLETE
+## Completed ✅ (17/17) - 100% COMPLETE
 
 ### Phase 0: Project Setup  
 - [x] Read and analyze PRD
@@ -130,6 +130,25 @@
 - [x] Test in production environment
 - [x] Verify all functionality works live
 
+### Phase 16: Offers System (Nov 9, 2025)
+- [x] Create Offer type definition
+- [x] Add offers storage methods to Memory and PostgreSQL adapters
+- [x] Create `/api/users/[userId]/offers` endpoint (GET & POST)
+- [x] Add success modal in operator dashboard
+- [x] Track sent offers state and update button to "Offer Sent"
+- [x] Add "Offers" section to user sidebar navigation
+- [x] Create offers view for users with category-based styling
+- [x] Implement offer cards with icons and dates
+
+### Phase 17: Pre-calculated Personas (Nov 9, 2025)
+- [x] Create `generate-data-with-personas.ts` script
+- [x] Calculate signals and personas during data generation
+- [x] Update memory adapter to load personas from JSON
+- [x] Remove auto-analysis from operator dashboard
+- [x] Fix primary persona selection (use lowest priority)
+- [x] Generate 150 users with pre-calculated personas
+- [x] Update package.json with `generate-data-full` command
+
 ## Optional Future Enhancements ⏸️
 
 ### Evaluation Metrics
@@ -164,16 +183,17 @@ Note: Basic metrics are implemented in the operator dashboard and can be queried
 
 ## Statistics
 
-- **Total Files Created**: 80+
-- **Lines of Code**: ~8,000+
+- **Total Files Created**: 85+
+- **Lines of Code**: ~9,000+
 - **Test Coverage**: 22 tests (5 test suites)
-- **Synthetic Users**: 75
-- **Transactions**: 11,120
-- **API Endpoints**: 12
+- **Synthetic Users**: 150
+- **Transactions**: 22,047
+- **API Endpoints**: 12 (including offers)
 - **UI Pages**: 3 (login, user dashboard, operator dashboard)
-- **Personas**: 5
+- **Personas**: 5 (pre-calculated)
 - **Signal Types**: 4
 - **Guardrails**: 4
+- **Offer Types**: 6 categories
 
 ## Time Tracking
 
@@ -181,7 +201,8 @@ Note: Basic metrics are implemented in the operator dashboard and can be queried
 |-------|-------|--------|
 | Phase 0-12 | ~10h | ✅ |
 | Phase 13-15 | ~4h | ✅ |
-| **Total** | **~14h** | **100%** |
+| Phase 16-17 | ~2h | ✅ |
+| **Total** | **~16h** | **100%** |
 
 ## Deployment Status
 
@@ -210,5 +231,7 @@ Note: Basic metrics are implemented in the operator dashboard and can be queried
 - ✅ Tests provide confidence in core business logic
 - ✅ Documentation enables easy onboarding
 - ✅ Live on Vercel and ready for user testing
-- ✅ 75 demo users available (user1-user75)
+- ✅ 150 demo users available (user1-user150)
 - ✅ Operator dashboard accessible (admin/admin)
+- ✅ Offers system for operator-user communication
+- ✅ Pre-calculated personas for instant display

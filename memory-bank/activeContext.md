@@ -2,10 +2,26 @@
 
 ## Current Status
 **Phase**: Production Deployment - Live on Vercel
-**Date**: November 6, 2025
-**Progress**: All major features complete, fully deployed
+**Date**: November 9, 2025
+**Progress**: All major features complete, offers system added, persona pre-calculation implemented
 
-## What We Just Completed
+## What We Just Completed (Nov 9, 2025)
+1. ✅ **Offers System**: Complete operator-to-user offer communication
+   - New Offer type definition with full lifecycle tracking
+   - API endpoint for sending and retrieving offers
+   - Beautiful success modal in operator dashboard
+   - Button state management (Send Offer → ✓ Offer Sent)
+   - New "Offers" section in user sidebar with Gift icon
+   - Category-based offer cards with color schemes
+2. ✅ **Pre-calculated Personas**: Personas now generated once during data generation
+   - New `generate-data-full` script calculates signals and personas upfront
+   - Personas saved to JSON file and loaded by memory adapter
+   - Removed auto-analysis from operator dashboard
+   - User Category column now populates immediately on first load
+   - 150 users with 300 signal results and 150 persona assignments
+3. ✅ **Bug Fixes**: Fixed primary persona selection to use lowest priority number
+
+## Previous Completions (Nov 6, 2025)
 1. ✅ **PostgreSQL Integration**: Complete async refactor of storage system
 2. ✅ **UI Design Overhaul**: Purple gradient theme with glass-morphism throughout
 3. ✅ **Typography System**: Geist Mono (body) + Geist Semibold (logo)
@@ -13,24 +29,25 @@
 5. ✅ **UX Fixes**: Disabled password manager, fixed modal blocking issues
 6. ✅ **Vercel Deployment**: Live at https://spendsense-rjrnbwyky-natalyscst-gmailcoms-projects.vercel.app
 7. ✅ **PostgreSQL Seeding**: 75 users, 150 accounts, 8,218 transactions on production database
-8. ✅ **Simplified AI Summary**: Button now only generates personalized text summaries (Nov 6, 2025)
+8. ✅ **Simplified AI Summary**: Button now only generates personalized text summaries
 
 ## Current Focus
-Application is fully deployed and operational. "Generate My Summary" button simplified to only create AI text content.
+Application is fully deployed with new offers system. Personas are now pre-calculated for immediate display.
 
 ## Project Status
 
 ### ✅ Core Features Complete
-- **Data Generation**: 75 users, deterministic seeding
-- **Signal Detection**: 4 types across 2 time windows (30d, 180d)
-- **Persona Assignment**: 5 personas with clear criteria and prioritization
+- **Data Generation**: 150 users, deterministic seeding with pre-calculated personas
+- **Signal Detection**: 4 types across 2 time windows (30d, 180d) - pre-calculated
+- **Persona Assignment**: 5 personas with clear criteria and prioritization - pre-calculated
 - **Recommendations**: Template-based + OpenAI content generation
 - **Guardrails**: Consent, eligibility, tone, disclaimer
-- **API**: 11 endpoints for auth, users, consent, operator functions (all async)
+- **Offers System**: Operator-to-user communication with beautiful UI
+- **API**: 12 endpoints for auth, users, consent, offers, operator functions (all async)
 - **UI**: Modern purple gradient design with glass-morphism effects
 - **Tests**: 22 passing tests across 5 test suites
 - **Storage**: Dual-mode (Memory + PostgreSQL) with full async support
-- **Authentication**: Username/password for users (user1-user75) and operators (admin)
+- **Authentication**: Username/password for users (user1-user150) and operators (admin)
 - **Deployment**: Live on Vercel with PostgreSQL backend
 
 ### ✅ Recent Major Enhancements
@@ -59,7 +76,10 @@ npm install
 # - STORAGE_MODE=memory (local) or postgres (production)
 # - DATABASE_URL (if using postgres)
 
-# Generate synthetic data (memory mode)
+# Generate synthetic data with pre-calculated personas (recommended)
+npm run generate-data-full
+
+# Or generate basic data without personas
 npm run generate-data
 
 # Seed PostgreSQL database (postgres mode)
@@ -74,8 +94,8 @@ npm test
 
 ### Login Credentials
 
-**Demo Users** (user1/user1 through user75/user75):
-- Username: user1 (or user2, user3, ... user75)
+**Demo Users** (user1/user1 through user150/user150):
+- Username: user1 (or user2, user3, ... user150)
 - Password: user1 (matches username)
 
 **Operator** (admin/admin):

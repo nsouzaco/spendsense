@@ -40,6 +40,8 @@ export class MemoryStorageAdapter implements StorageAdapter {
     accounts: Account[];
     transactions: Transaction[];
     liabilities: Liability[];
+    signals?: SignalResult[];
+    personas?: PersonaAssignment[];
   }) {
     if (data) {
       this.loadData(data);
@@ -51,6 +53,8 @@ export class MemoryStorageAdapter implements StorageAdapter {
     accounts: Account[];
     transactions: Transaction[];
     liabilities: Liability[];
+    signals?: SignalResult[];
+    personas?: PersonaAssignment[];
   }) {
     // Load users
     data.users.forEach(user => {
@@ -95,6 +99,26 @@ export class MemoryStorageAdapter implements StorageAdapter {
       }
       this.liabilitiesByUser.get(liability.userId)!.push(liability.id);
     });
+
+    // Load signals if provided
+    if (data.signals) {
+      data.signals.forEach(signal => {
+        if (!this.signals.has(signal.userId)) {
+          this.signals.set(signal.userId, []);
+        }
+        this.signals.get(signal.userId)!.push(signal);
+      });
+    }
+
+    // Load personas if provided
+    if (data.personas) {
+      data.personas.forEach(persona => {
+        if (!this.personas.has(persona.userId)) {
+          this.personas.set(persona.userId, []);
+        }
+        this.personas.get(persona.userId)!.push(persona);
+      });
+    }
   }
 
   // User operations
